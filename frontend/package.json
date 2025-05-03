@@ -3,19 +3,23 @@
   "version": "0.1.0",
   "main": "main/index.js",
   "scripts": {
-    "start": "concurrently \"npm run electron\" \"npm run dev\"",
-    "dev": "vite",
-    "electron": "electron ."
+    "dev:renderer": "vite",
+    "build:renderer": "vite build",
+    "dev:electron": "cross-env NODE_ENV=development electron .",
+    "start:electron": "cross-env NODE_ENV=production electron .",
+    "dev": "concurrently \"npm run dev:renderer\" \"npm run dev:electron\"",
+    "start": "npm run dev"
   },
   "dependencies": {
     "axios": "^1.9.0",
-    "electron": "^29.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^29.4.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.5.3"
   },
   "devDependencies": {
-    "concurrently": "^8.0.0",
+    "concurrently": "^8.2.2",
     "vite": "^5.4.19"
   }
 }
