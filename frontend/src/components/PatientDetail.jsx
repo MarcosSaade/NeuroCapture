@@ -1,44 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import { getPatient, updatePatient } from '../api/patient';
+import React, { useState, useEffect } from 'react';
+import { getPatient, updatePatient, deletePatient } from '../api/patient';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationContext';
 
 export default function PatientDetail() {
   const { id } = useParams();
-  const nav = useNavigate();
+  const navigate = useNavigate();
+  const { addToast } = useNotifications();
+
   const [patient, setPatient] = useState(null);
   const [studyId, setStudyId] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const p = await getPatient(id);
-      setPatient(p);
-      setStudyId(p.study_identifier);
+      try {
+        const data = await getPatient(id);
+        setPatient(data);
+        setStudyId(data.study_identifier);
+      } catch {
+        addToast('Failed to load patient', 'error');
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [id]);
 
-  const handleUpdate = async () => {
-    await updatePatient(id, { study_identifier: studyId });
-    nav('/');
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await updatePatient(id, { study_identifier: studyId });
+      addToast('Updated successfully', 'success');
+      navigate('/');
+    } catch {
+      addToast('Failed to update', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!patient) return <div>Loading…</div>;
+  const handleDelete = async () => {
+    if (!window.confirm('Delete this patient?')) return;
+    try {
+      await deletePatient(id);
+      addToast('Patient deleted', 'success');
+      navigate('/');
+    } catch {
+      addToast('Delete failed', 'error');
+    }
+  };
+
+  if (loading) return <div>Loading patient…</div>;
+  if (!patient) return <div className="text-red-500">No patient found.</div>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl">Patient {patient.patient_id}</h2>
-      <label className="block mt-2">
-        Study Identifier
+    <div className="space-y-4">
+      <div>
+        <label className="block">Study Identifier:</label>
         <input
-          className="mt-1 block w-full border rounded p-1"
+          type="text"
           value={studyId}
-          onChange={e => setStudyId(e.target.value)}
+          onChange={(e) => setStudyId(e.target.value)}
+          disabled={loading}
+          className="border px-2 py-1 w-full"
         />
-      </label>
-      <div className="mt-4">
-        <button onClick={handleUpdate} className="px-4 py-2 bg-green-600 text-white rounded mr-2">
-          Save
+      </div>
+      <div className="space-x-2">
+        <button onClick={handleSave} disabled={loading} className="bg-green-600 text-white px-4 py-1 rounded">
+          {loading ? 'Saving…' : 'Save'}
         </button>
-        <button onClick={() => nav('/')} className="px-4 py-2 bg-gray-400 text-white rounded">
+        <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-1 rounded">
+          Delete
+        </button>
+        <button onClick={() => navigate('/')} className="bg-gray-400 text-white px-4 py-1 rounded">
           Cancel
         </button>
       </div>

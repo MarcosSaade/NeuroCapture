@@ -1,36 +1,39 @@
 import React, { useState } from 'react';
 import { createPatient } from '../api/patient';
+import { useNotifications } from '../context/NotificationContext';
 
-export default function NewPatientForm({ onCreated }) {
+export default function NewPatientForm() {
   const [studyId, setStudyId] = useState('');
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { addToast } = useNotifications();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    setLoading(true);
     try {
-      const p = await createPatient({ study_identifier: studyId });
+      await createPatient({ study_identifier: studyId });
+      addToast('Patient created', 'success');
       setStudyId('');
-      onCreated(p);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message);
+      addToast(err.response?.data?.detail || 'Failed to create', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-gray-50 rounded">
-      <label className="block">
-        Study Identifier
-        <input
-          className="mt-1 block w-full border rounded p-1"
-          value={studyId}
-          onChange={e => setStudyId(e.target.value)}
-          required
-        />
-      </label>
-      {error && <div className="text-red-600 mt-1">{error}</div>}
-      <button type="submit" className="mt-2 px-4 py-2 bg-blue-600 text-white rounded">
-        Create Patient
+    <form onSubmit={handleSubmit} className="mb-4 flex space-x-2">
+      <input
+        type="text"
+        placeholder="Study Identifier"
+        value={studyId}
+        onChange={(e) => setStudyId(e.target.value)}
+        disabled={loading}
+        className="border px-2 py-1 flex-grow"
+        required
+      />
+      <button type="submit" disabled={loading} className="bg-blue-600 text-white px-4 py-1 rounded">
+        {loading ? 'Creating…' : 'Create Patient'}
       </button>
     </form>
   );
