@@ -1,21 +1,19 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 import os
-
 from dotenv import load_dotenv
-load_dotenv()
 
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
+load_dotenv()  # loads DATABASE_URL into env
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL env var not set")
 
+# Create the async engine
 engine = create_async_engine(DATABASE_URL, echo=True)
-AsyncSessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
 
-# Dependency for FastAPI routes
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
+# Create the async session factory
+async_session: async_sessionmaker = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+)

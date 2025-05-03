@@ -1,7 +1,9 @@
 from fastapi import FastAPI
+from app.api.v1.endpoints import patients
 
-app = FastAPI()
+app = FastAPI(
+    title="NeuroCapture API",
+    version="0.1.0"
+)
 
-@app.get("/ping")
-async def ping():
-    return {"message": "pong"}
+app.include_router(patients.router, prefix="/api/v1")
