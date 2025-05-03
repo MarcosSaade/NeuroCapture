@@ -1,0 +1,32 @@
+# Python
+venv/
+backend/venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.log
+
+# Environment
+.env
+
+# Node.js
+node_modules/
+frontend/node_modules/
+dist/
+*.log
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Build
+*.out
+*.tsbuildinfo
+*.bak
+*.tmp

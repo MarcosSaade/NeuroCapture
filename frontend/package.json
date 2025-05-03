@@ -1,0 +1,19 @@
+{
+  "name": "neurocapture-frontend",
+  "version": "0.1.0",
+  "main": "main/index.js",
+  "scripts": {
+    "start": "concurrently \"npm run electron\" \"npm run dev\"",
+    "dev": "vite",
+    "electron": "electron ."
+  },
+  "dependencies": {
+    "electron": "^29.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0",
+    "vite": "^5.4.19"
+  }
+}
