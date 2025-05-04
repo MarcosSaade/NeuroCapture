@@ -1,3 +1,5 @@
+# .github/workflows/ci.yml
+
 name: CI
 
 on:
@@ -11,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11]
+        python-version: ["3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3
@@ -27,8 +29,8 @@ jobs:
           pip install poetry
           poetry install --only main,dev
 
-      - name: Run migrations (SQLite in-memory skipped)
-        # run alembic upgrade head when we have a real DB
+      # - name: Run migrations (SQLite in-memory skipped)
+      #   run: alembic upgrade head
 
       - name: Run tests
         run: |
