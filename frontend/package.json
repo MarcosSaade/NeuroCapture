@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "main": "main/index.js",
   "scripts": {
-    "dev:renderer": "vite",
-    "build:renderer": "vite build",
+    "dev:renderer": "vite --config vite.config.js",
     "dev:electron": "cross-env NODE_ENV=development electron .",
-    "start:electron": "cross-env NODE_ENV=production electron .",
     "dev": "concurrently \"npm run dev:renderer\" \"npm run dev:electron\"",
-    "start": "npm run dev"
+    "build:renderer": "vite build --config vite.config.js",
+    "start:electron": "cross-env NODE_ENV=production electron ."
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.4.1",
@@ -20,7 +19,11 @@
     "react-router-dom": "^7.5.3"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.5",
+    "autoprefixer": "^10.4.21",
     "concurrently": "^8.2.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.5",
     "vite": "^5.4.19"
   }
 }
