@@ -1,0 +1,144 @@
+===== frontend/renderer/src/index.css =====
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+===== frontend/renderer/tailwind.config.js =====
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+===== frontend/renderer/postcss.config.js =====
+module.exports = {
+  plugins: {
+    '@tailwindcss/postcss': {},
+    autoprefixer: {},
+  },
+};
+
+===== frontend/vite.config.js =====
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  root: path.resolve(__dirname, 'renderer'),
+
+  base: './',
+
+  plugins: [
+    react(),
+  ],
+
+  build: {
+    outDir: path.resolve(__dirname, 'renderer', 'dist'),
+    emptyOutDir: true,
+  },
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'renderer', 'src'),
+    },
+  },
+
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+});
+
+
+===== frontend/package.json =====
+{
+  "name": "neurocapture-frontend",
+  "version": "0.1.0",
+  "main": "main/index.js",
+  "scripts": {
+    "dev:renderer": "vite --config vite.config.js",
+    "dev:electron": "cross-env NODE_ENV=development electron .",
+    "dev": "concurrently \"npm run dev:renderer\" \"npm run dev:electron\"",
+    "build:renderer": "vite build --config vite.config.js",
+    "start:electron": "cross-env NODE_ENV=production electron ."
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "axios": "^1.9.0",
+    "cross-env": "^7.0.3",
+    "electron": "^29.4.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.5.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.5",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.5",
+    "vite": "^5.4.19"
+  }
+}
+
+
+===== frontend/renderer/index.html =====
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NeuroCapture</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+===== frontend/renderer/src/main.jsx =====
+import React from 'react';
+import './index.css';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+
+===== frontend/renderer/src/App.jsx =====
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import PatientTable from './components/PatientTable';
+import PatientDetail from './components/PatientDetail';
+import NewPatientForm from './components/NewPatientForm';
+import { NotificationProvider } from './context/NotificationContext';
+import { ToastContainer } from './components/Toast';
+
+export default function App() {
+  return (
+    <NotificationProvider>
+      <Router>
+        <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-4">NeuroCapture – Patients</h1>
+          <NewPatientForm />
+          <Routes>
+            <Route path="/" element={<PatientTable />} />
+            <Route path="/patients/:id" element={<PatientDetail />} />
+          </Routes>
+        </div>
+      </Router>
+      <ToastContainer />
+    </NotificationProvider>
+  );
+}
+
+
