@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getPatient, updatePatient, deletePatient } from '../api/patient';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 
-export default function PatientDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+export default function PatientDetail({ patientId, onSuccess }) {
   const { addToast } = useNotifications();
-
   const [patient, setPatient] = useState(null);
   const [studyId, setStudyId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -15,7 +11,7 @@ export default function PatientDetail() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await getPatient(id);
+        const data = await getPatient(patientId);
         setPatient(data);
         setStudyId(data.study_identifier);
       } catch {
@@ -24,14 +20,14 @@ export default function PatientDetail() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [patientId]);
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updatePatient(id, { study_identifier: studyId });
+      await updatePatient(patientId, { study_identifier: studyId });
       addToast('Updated successfully', 'success');
-      navigate('/');
+      onSuccess?.();
     } catch {
       addToast('Failed to update', 'error');
     } finally {
@@ -42,9 +38,9 @@ export default function PatientDetail() {
   const handleDelete = async () => {
     if (!window.confirm('Delete this patient?')) return;
     try {
-      await deletePatient(id);
+      await deletePatient(patientId);
       addToast('Patient deleted', 'success');
-      navigate('/');
+      onSuccess?.();
     } catch {
       addToast('Delete failed', 'error');
     }
@@ -56,7 +52,7 @@ export default function PatientDetail() {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block">Study Identifier:</label>
+        <label className="block mb-1">Study Identifier:</label>
         <input
           type="text"
           value={studyId}
@@ -65,15 +61,19 @@ export default function PatientDetail() {
           className="border px-2 py-1 w-full"
         />
       </div>
-      <div className="space-x-2">
-        <button onClick={handleSave} disabled={loading} className="bg-green-600 text-white px-4 py-1 rounded">
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="bg-green-600 text-white px-4 py-2 rounded"
+        >
           {loading ? 'Saving…' : 'Save'}
         </button>
-        <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-1 rounded">
+        <button
+          onClick={handleDelete}
+          className="bg-red-600 text-white px-4 py-2 rounded"
+        >
           Delete
-        </button>
-        <button onClick={() => navigate('/')} className="bg-gray-400 text-white px-4 py-1 rounded">
-          Cancel
         </button>
       </div>
     </div>

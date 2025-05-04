@@ -1,9 +1,10 @@
+// src/components/PatientTable.jsx
+
 import React, { useState, useEffect } from 'react';
 import { fetchPatients, deletePatient } from '../api/patient';
 import { useNotifications } from '../context/NotificationContext';
-import { Link } from 'react-router-dom';
 
-export default function PatientTable() {
+export default function PatientTable({ onEdit, refresh }) {
   const [patients, setPatients] = useState([]);
   const [skip, setSkip] = useState(0);
   const [limit] = useState(10);
@@ -17,16 +18,17 @@ export default function PatientTable() {
     try {
       const data = await fetchPatients(skip, limit);
       setPatients(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load patients');
     } finally {
       setLoading(false);
     }
   };
 
+  // reload whenever skip or refresh changes
   useEffect(() => {
     load();
-  }, [skip]);
+  }, [skip, refresh]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this patient?')) return;
@@ -60,8 +62,12 @@ export default function PatientTable() {
               <td>{p.study_identifier}</td>
               <td>{new Date(p.created_at).toLocaleString()}</td>
               <td className="space-x-2">
-                <Link to={`/patients/${p.patient_id}`} className="text-blue-600">Edit</Link>
-                <button onClick={() => handleDelete(p.patient_id)} className="text-red-600">Delete</button>
+                <button onClick={() => onEdit(p.patient_id)} className="text-blue-600">
+                  Edit
+                </button>
+                <button onClick={() => handleDelete(p.patient_id)} className="text-red-600">
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
