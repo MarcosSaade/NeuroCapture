@@ -181,7 +181,9 @@ export default function PatientTable({ onEdit, refresh }) {
             return (
               <tr key={p.patient_id} className="hover:bg-gray-50">
                 <td className="px-2 py-1">{p.patient_id}</td>
-                <td className="px-2 py-1">{p.study_identifier}</td>
+                <td className="px-2 py-1 text-blue-600 underline cursor-pointer">
+                  <Link to={`/patients/${p.patient_id}`}>{p.study_identifier}</Link>
+                </td>
                 <td className="px-2 py-1">
                   <span
                     className={`px-2 py-1 rounded-full text-sm font-medium ${
