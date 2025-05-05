@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import PatientDetail from '../components/PatientDetail';
+import DemographicForm from '../components/DemographicForm';
 import Modal from '../components/Modal';
 
 export default function PatientDetailPage() {
@@ -16,6 +17,10 @@ export default function PatientDetailPage() {
   const handleEditSuccess = () => {
     setEditOpen(false);
     addToast('Patient updated', 'success');
+  };
+
+  const handleDemoSaved = () => {
+    addToast('Demographics saved', 'success');
   };
 
   return (
@@ -42,16 +47,19 @@ export default function PatientDetailPage() {
       {/* Read-only detail */}
       <PatientDetail patientId={id} readOnly />
 
+      {/* Demographics section */}
+      <div className="mt-8">
+        <h3 className="text-lg font-medium mb-2">Demographics</h3>
+        <DemographicForm patientId={id} onSaved={handleDemoSaved} />
+      </div>
+
       {/* Edit Modal */}
       <Modal
         isOpen={editOpen}
         onClose={() => setEditOpen(false)}
         title="Edit Patient"
       >
-        <PatientDetail
-          patientId={id}
-          onSuccess={handleEditSuccess}
-        />
+        <PatientDetail patientId={id} onSuccess={handleEditSuccess} />
       </Modal>
     </div>
   );

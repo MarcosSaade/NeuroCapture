@@ -28,3 +28,5 @@ export async function updatePatient(id, data) {
 export async function deletePatient(id) {
   await api.delete(`/patients/${id}`);
 }
+
+export default api;
