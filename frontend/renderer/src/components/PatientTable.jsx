@@ -18,6 +18,7 @@ export default function PatientTable({ onEdit, refresh }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [sortField, setSortField] = useState('patient_id');
   const [sortAsc, setSortAsc] = useState(true);
   const { addToast } = useNotifications();
@@ -50,18 +51,40 @@ export default function PatientTable({ onEdit, refresh }) {
     }
   };
 
+  // Compute status counts
+  const statusCounts = useMemo(() => {
+    const counts = { all: patients.length };
+    patients.forEach((p) => {
+      const s = p.status ?? 'pending';
+      counts[s] = (counts[s] || 0) + 1;
+    });
+    return counts;
+  }, [patients]);
+
+  // Filtered & sorted data
   const displayed = useMemo(() => {
-    let arr = patients.filter((p) =>
+    let arr = patients;
+
+    // status filter
+    if (statusFilter !== 'all') {
+      arr = arr.filter((p) => (p.status ?? 'pending') === statusFilter);
+    }
+
+    // search filter
+    arr = arr.filter((p) =>
       p.study_identifier.toLowerCase().includes(search.toLowerCase())
     );
+
+    // sort
     arr.sort((a, b) => {
       const va = a[sortField], vb = b[sortField];
       if (va < vb) return sortAsc ? -1 : 1;
       if (va > vb) return sortAsc ? 1 : -1;
       return 0;
     });
+
     return arr;
-  }, [patients, search, sortField, sortAsc]);
+  }, [patients, statusFilter, search, sortField, sortAsc]);
 
   const exportCSV = () => {
     const headers = ['ID','Study ID','Status','Created At','Updated At'];
@@ -94,21 +117,41 @@ export default function PatientTable({ onEdit, refresh }) {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-2">
-        <input
-          type="text"
-          placeholder="Search Study ID…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border px-2 py-1 rounded w-1/3"
-        />
-        <button
-          onClick={exportCSV}
-          className="bg-green-600 text-white px-3 py-1 rounded"
-        >
-          Export CSV
-        </button>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center justify-between mb-4 space-y-2">
+        <div className="flex items-center space-x-2">
+          <label htmlFor="statusFilter" className="font-medium">Status:</label>
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border px-2 py-1 rounded"
+          >
+            {Object.entries(statusCounts).map(([status, count]) => (
+              <option key={status} value={status}>
+                {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <input
+            type="text"
+            placeholder="Search Study ID…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+          <button
+            onClick={exportCSV}
+            className="bg-green-600 text-white px-3 py-1 rounded"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
+
+      {/* Table */}
       <table className="table-auto w-full mb-4 border-collapse">
         <thead>
           <tr>
@@ -179,6 +222,8 @@ export default function PatientTable({ onEdit, refresh }) {
           )}
         </tbody>
       </table>
+
+      {/* Pagination */}
       <div className="flex justify-between">
         <button
           onClick={() => setSkip((s) => Math.max(0, s - limit))}
