@@ -4,6 +4,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchPatients, deletePatient } from '../api/patient';
 import { useNotifications } from '../context/NotificationContext';
 
+const statusColors = {
+  complete: 'bg-green-100 text-green-800',
+  incomplete: 'bg-yellow-100 text-yellow-800',
+  pending: 'bg-gray-100 text-gray-800',
+  error: 'bg-red-100 text-red-800'
+};
+
 export default function PatientTable({ onEdit, refresh }) {
   const [patients, setPatients] = useState([]);
   const [skip, setSkip] = useState(0);
@@ -43,7 +50,6 @@ export default function PatientTable({ onEdit, refresh }) {
     }
   };
 
-  // Filtered & sorted data
   const displayed = useMemo(() => {
     let arr = patients.filter((p) =>
       p.study_identifier.toLowerCase().includes(search.toLowerCase())
@@ -57,12 +63,12 @@ export default function PatientTable({ onEdit, refresh }) {
     return arr;
   }, [patients, search, sortField, sortAsc]);
 
-  // CSV download
   const exportCSV = () => {
-    const headers = ['ID','Study ID','Created At','Updated At'];
+    const headers = ['ID','Study ID','Status','Created At','Updated At'];
     const rows = displayed.map(p => [
       p.patient_id,
       p.study_identifier,
+      p.status ?? 'pending',
       p.created_at,
       p.updated_at
     ]);
@@ -109,6 +115,7 @@ export default function PatientTable({ onEdit, refresh }) {
             {[
               ['patient_id','ID'],
               ['study_identifier','Study ID'],
+              ['status','Status'],
               ['created_at','Created At'],
               ['updated_at','Updated At'],
             ].map(([field,label]) => (
@@ -125,35 +132,47 @@ export default function PatientTable({ onEdit, refresh }) {
           </tr>
         </thead>
         <tbody>
-          {displayed.map((p) => (
-            <tr key={p.patient_id} className="hover:bg-gray-50">
-              <td className="px-2 py-1">{p.patient_id}</td>
-              <td className="px-2 py-1">{p.study_identifier}</td>
-              <td className="px-2 py-1">
-                {new Date(p.created_at).toLocaleString()}
-              </td>
-              <td className="px-2 py-1">
-                {new Date(p.updated_at).toLocaleString()}
-              </td>
-              <td className="px-2 py-1 space-x-2">
-                <button
-                  onClick={() => onEdit(p.patient_id)}
-                  className="text-blue-600"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(p.patient_id)}
-                  className="text-red-600"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
+          {displayed.map((p) => {
+            const status = p.status ?? 'pending';
+            return (
+              <tr key={p.patient_id} className="hover:bg-gray-50">
+                <td className="px-2 py-1">{p.patient_id}</td>
+                <td className="px-2 py-1">{p.study_identifier}</td>
+                <td className="px-2 py-1">
+                  <span
+                    className={`px-2 py-1 rounded-full text-sm font-medium ${
+                      statusColors[status] ?? statusColors.pending
+                    }`}
+                  >
+                    {status}
+                  </span>
+                </td>
+                <td className="px-2 py-1">
+                  {new Date(p.created_at).toLocaleString()}
+                </td>
+                <td className="px-2 py-1">
+                  {new Date(p.updated_at).toLocaleString()}
+                </td>
+                <td className="px-2 py-1 space-x-2">
+                  <button
+                    onClick={() => onEdit(p.patient_id)}
+                    className="text-blue-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.patient_id)}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
           {displayed.length === 0 && (
             <tr>
-              <td colSpan={5} className="text-center py-4 text-gray-500">
+              <td colSpan={6} className="text-center py-4 text-gray-500">
                 No patients found.
               </td>
             </tr>
