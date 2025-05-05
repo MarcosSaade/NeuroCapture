@@ -1,6 +1,7 @@
 // src/components/PatientTable.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchPatients, deletePatient } from '../api/patient';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -197,6 +198,12 @@ export default function PatientTable({ onEdit, refresh }) {
                   {new Date(p.updated_at).toLocaleString()}
                 </td>
                 <td className="px-2 py-1 space-x-2">
+                  <Link
+                    to={`/patients/${p.patient_id}`}
+                    className="text-indigo-600 hover:underline"
+                  >
+                    View
+                  </Link>
                   <button
                     onClick={() => onEdit(p.patient_id)}
                     className="text-blue-600"
