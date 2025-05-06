@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PatientTable from './components/PatientTable';
 import NewPatientForm from './components/NewPatientForm';
+import PatientDetail from './components/PatientDetail';
 import Modal from './components/Modal';
 import { NotificationProvider } from './context/NotificationContext';
 import PatientDetailPage from './pages/PatientDetailPage';
@@ -67,10 +68,10 @@ export default function App() {
                     title="Edit Patient"
                   >
                     {editId !== null && (
-                      <PatientDetailPage
-                        patientId={editId}
-                        onSuccess={handleEditSuccess}
-                      />
+                      <PatientDetail
+                      patientId={editId}
+                      onSuccess={handleEditSuccess}
+                    />
                     )}
                   </Modal>
                 </>

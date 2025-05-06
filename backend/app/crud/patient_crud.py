@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from fastapi import HTTPException
 from app.models import Patient as PatientModel
+from app.models import Demographic as DemographicModel
+from fastapi import HTTPException
 from app.schemas.patient_schema import PatientCreate, PatientUpdate
 
 async def create_patient(db: AsyncSession, *, obj_in: PatientCreate) -> PatientModel:
@@ -35,6 +37,13 @@ async def update_patient(
     return db_obj
 
 async def delete_patient(db: AsyncSession, *, patient_id: int) -> None:
+    # delete related demographics first
+    await db.execute(
+        delete(DemographicModel).where(DemographicModel.patient_id == patient_id)
+    )
+    await db.commit()
+
+    # then delete the patient
     result = await db.execute(select(PatientModel).where(PatientModel.patient_id == patient_id))
     db_obj = result.scalars().first()
     if not db_obj:

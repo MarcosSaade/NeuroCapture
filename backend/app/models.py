@@ -20,7 +20,9 @@ class Patient(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
-    demographics = relationship("Demographic", back_populates="patient")
+    demographics = relationship(
+        "Demographic", back_populates="patient", cascade="all, delete-orphan",
+        passive_deletes=True)
     assessments = relationship("CognitiveAssessment", back_populates="patient")
     accel_sessions = relationship("AccelerometerData", back_populates="patient")
     openpose_sessions = relationship("OpenPoseData", back_populates="patient")
@@ -30,7 +32,11 @@ class Demographic(Base):
     __tablename__ = "demographics"
 
     demographic_id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.patient_id"), nullable=False)
+    patient_id = Column(
+        Integer,
+        ForeignKey("patients.patient_id", ondelete="CASCADE"),
+        nullable=False
+        )
     age = Column(Integer, nullable=False)
     gender = Column(String(10), nullable=False)
     education_years = Column(Integer, nullable=True)

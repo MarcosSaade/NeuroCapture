@@ -200,15 +200,9 @@ export default function PatientTable({ onEdit, refresh }) {
                   {new Date(p.updated_at).toLocaleString()}
                 </td>
                 <td className="px-2 py-1 space-x-2">
-                  <Link
-                    to={`/patients/${p.patient_id}`}
-                    className="text-indigo-600 hover:underline"
-                  >
-                    View
-                  </Link>
                   <button
                     onClick={() => onEdit(p.patient_id)}
-                    className="text-blue-600"
+                    className="text-indigo-600 hover:underline"
                   >
                     Edit
                   </button>

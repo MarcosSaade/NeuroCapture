@@ -1,6 +1,9 @@
+// src/components/PatientDetail.jsx
+
 import React, { useState, useEffect } from 'react';
 import { getPatient, updatePatient, deletePatient } from '../api/patient';
 import { useNotifications } from '../context/NotificationContext';
+import DemographicForm from './DemographicForm';
 
 export default function PatientDetail({ patientId, onSuccess }) {
   const { addToast } = useNotifications();
@@ -20,7 +23,7 @@ export default function PatientDetail({ patientId, onSuccess }) {
         setLoading(false);
       }
     })();
-  }, [patientId]);
+  }, [patientId, addToast]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -50,9 +53,10 @@ export default function PatientDetail({ patientId, onSuccess }) {
   if (!patient) return <div className="text-red-500">No patient found.</div>;
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="block mb-1">Study Identifier:</label>
+    <div className="space-y-6">
+      {/* Study Identifier */}
+      <div className="space-y-1">
+        <label className="block font-medium">Study Identifier:</label>
         <input
           type="text"
           value={studyId}
@@ -60,22 +64,28 @@ export default function PatientDetail({ patientId, onSuccess }) {
           disabled={loading}
           className="border px-2 py-1 w-full"
         />
-      </div>
-      <div className="flex justify-end space-x-2">
         <button
           onClick={handleSave}
           disabled={loading}
-          className="bg-green-600 text-white px-4 py-2 rounded"
+          className="mt-2 bg-green-600 text-white px-4 py-2 rounded"
         >
-          {loading ? 'Saving…' : 'Save'}
-        </button>
-        <button
-          onClick={handleDelete}
-          className="bg-red-600 text-white px-4 py-2 rounded"
-        >
-          Delete
+          {loading ? 'Saving…' : 'Save Study ID'}
         </button>
       </div>
+
+      {/* Demographics Section */}
+      <div>
+        <h3 className="text-lg font-semibold">Demographics</h3>
+        <DemographicForm patientId={patientId} onSaved={onSuccess} />
+      </div>
+
+      {/* Delete Patient */}
+      <button
+        onClick={handleDelete}
+        className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
+      >
+        Delete Patient
+      </button>
     </div>
   );
 }
