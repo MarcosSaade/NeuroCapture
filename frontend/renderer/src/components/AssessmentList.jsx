@@ -15,6 +15,8 @@ export default function AssessmentList({
           <th className="px-2 py-1 border-b">Type</th>
           <th className="px-2 py-1 border-b">Score</th>
           <th className="px-2 py-1 border-b">Date</th>
+          <th className="px-2 py-1 border-b">Diagnosis</th>
+          <th className="px-2 py-1 border-b">Notes</th>
           <th className="px-2 py-1 border-b">Actions</th>
         </tr>
       </thead>
@@ -28,6 +30,8 @@ export default function AssessmentList({
             <td className="px-2 py-1">
               {new Date(a.assessment_date).toLocaleString()}
             </td>
+            <td className="px-2 py-1">{a.diagnosis || '-'}</td>
+            <td className="px-2 py-1">{a.notes || '-'}</td>
             <td className="px-2 py-1 space-x-2">
               <button
                 onClick={() => onEdit(a)}
