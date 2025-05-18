@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 
 Base = declarative_base()
 
-
 def utc_now():
     return datetime.now(timezone.utc)
 
@@ -21,9 +20,17 @@ class Patient(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     demographics = relationship(
-        "Demographic", back_populates="patient", cascade="all, delete-orphan",
-        passive_deletes=True)
-    assessments = relationship("CognitiveAssessment", back_populates="patient")
+        "Demographic",
+        back_populates="patient",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    assessments = relationship(
+        "CognitiveAssessment",
+        back_populates="patient",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
     accel_sessions = relationship("AccelerometerData", back_populates="patient")
     openpose_sessions = relationship("OpenPoseData", back_populates="patient")
 
@@ -36,7 +43,7 @@ class Demographic(Base):
         Integer,
         ForeignKey("patients.patient_id", ondelete="CASCADE"),
         nullable=False
-        )
+    )
     age = Column(Integer, nullable=False)
     gender = Column(String(10), nullable=False)
     education_years = Column(Integer, nullable=True)
@@ -65,6 +72,31 @@ class CognitiveAssessment(Base):
 
     patient = relationship("Patient", back_populates="assessments")
     audio_recordings = relationship("AudioRecording", back_populates="assessment")
+    subscores = relationship(
+        "AssessmentSubscore",
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+class AssessmentSubscore(Base):
+    __tablename__ = "assessment_subscores"
+
+    subscore_id = Column(Integer, primary_key=True, index=True)
+    assessment_id = Column(
+        Integer,
+        ForeignKey("cognitive_assessments.assessment_id", ondelete="CASCADE"),
+        nullable=False
+    )
+    name = Column(String(100), nullable=False)
+    score = Column(Float, nullable=False)
+    max_score = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
+
+    assessment = relationship("CognitiveAssessment", back_populates="subscores")
+
 
 
 class AudioRecording(Base):

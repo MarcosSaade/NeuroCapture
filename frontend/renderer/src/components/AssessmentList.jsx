@@ -1,3 +1,5 @@
+// src/components/AssessmentList.jsx
+
 import React from 'react';
 
 export default function AssessmentList({
@@ -8,6 +10,7 @@ export default function AssessmentList({
   if (!assessments.length) {
     return <div className="text-gray-500">No assessments yet.</div>;
   }
+
   return (
     <table className="table-auto w-full mt-4 border-collapse">
       <thead>
@@ -17,6 +20,7 @@ export default function AssessmentList({
           <th className="px-2 py-1 border-b">Date</th>
           <th className="px-2 py-1 border-b">Diagnosis</th>
           <th className="px-2 py-1 border-b">Notes</th>
+          <th className="px-2 py-1 border-b">Subscores</th>
           <th className="px-2 py-1 border-b">Actions</th>
         </tr>
       </thead>
@@ -32,6 +36,15 @@ export default function AssessmentList({
             </td>
             <td className="px-2 py-1">{a.diagnosis || '-'}</td>
             <td className="px-2 py-1">{a.notes || '-'}</td>
+            <td className="px-2 py-1">
+              {a.subscores && a.subscores.length > 0
+                ? a.subscores
+                    .map(
+                      s => `${s.name}: ${s.score}/${s.max_score}`
+                    )
+                    .join(', ')
+                : '-'}
+            </td>
             <td className="px-2 py-1 space-x-2">
               <button
                 onClick={() => onEdit(a)}

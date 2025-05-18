@@ -14,6 +14,32 @@ const TEST_TYPES = [
   { label: 'Other', max: null },
 ];
 
+// Preset subscores for MMSE and MoCA:
+const SUBSCORES_PRESETS = {
+  MMSE: [
+    ['Orientation – Time', 5],
+    ['Orientation – Place', 5],
+    ['Registration', 3],
+    ['Attention & Calculation', 5],
+    ['Recall', 3],
+    ['Language – Naming', 2],
+    ['Language – Repetition', 1],
+    ['Language – Comprehension', 3],
+    ['Reading', 1],
+    ['Writing', 1],
+    ['Visuoconstruction', 1],
+  ],
+  MoCA: [
+    ['Visuospatial/Executive', 5],
+    ['Naming', 3],
+    ['Attention', 6],
+    ['Language', 3],
+    ['Abstraction', 2],
+    ['Delayed Recall', 5],
+    ['Orientation', 6],
+  ],
+};
+
 export default function AssessmentForm({
   patientId,
   initialData = null,   // the assessment to prefill for editing
@@ -29,11 +55,12 @@ export default function AssessmentForm({
     assessment_date: new Date().toISOString().slice(0, 16),
     diagnosis: '',
     notes: '',
+    subscores: [],      // will hold { name, score, max_score }
   });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // load existing assessments (for potential refetch/use by parent)
+  // Load existing assessments
   const load = async () => {
     try {
       const arr = await fetchAssessments(patientId);
@@ -43,7 +70,7 @@ export default function AssessmentForm({
     }
   };
 
-  // initialize on mount and when patientId or initialData changes
+  // Initialize on mount / patientId / initialData
   useEffect(() => {
     setLoading(true);
     load()
@@ -51,7 +78,7 @@ export default function AssessmentForm({
       .finally(() => setLoading(false));
 
     if (initialData) {
-      // editing: prefill
+      // Editing existing assessment
       setEditId(initialData.assessment_id);
       setForm({
         assessment_type: initialData.assessment_type,
@@ -60,11 +87,16 @@ export default function AssessmentForm({
         assessment_date: initialData.assessment_date.slice(0, 16),
         diagnosis: initialData.diagnosis || '',
         notes: initialData.notes || '',
+        subscores: initialData.subscores?.map(s => ({
+          name: s.name,
+          score: s.score,
+          max_score: s.max_score,
+        })) || [],
       });
     } else {
-      // creating new: reset form
+      // New assessment: reset fields
       setEditId(null);
-      setForm((f) => ({
+      setForm(f => ({
         ...f,
         score: '',
         diagnosis: '',
@@ -73,29 +105,44 @@ export default function AssessmentForm({
     }
   }, [patientId, initialData]);
 
-  // update max_possible_score when type changes
+  // Update max & preset subscores when type changes
   useEffect(() => {
-    const typeObj = TEST_TYPES.find((t) => t.label === form.assessment_type);
-    setForm((f) => ({
+    const typeObj = TEST_TYPES.find(t => t.label === form.assessment_type);
+    const presets = SUBSCORES_PRESETS[form.assessment_type] || [];
+    setForm(f => ({
       ...f,
-      max_possible_score: typeObj.max,
+      max_possible_score: typeObj?.max ?? null,
+      subscores: presets.map(([name, max]) => ({
+        name,
+        score: f.subscores.find(s => s.name === name)?.score ?? '',
+        max_score: max,
+      })),
     }));
   }, [form.assessment_type]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    setForm(f => ({ ...f, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubscoreChange = (idx, value) => {
+    setForm(f => {
+      const subs = [...f.subscores];
+      subs[idx] = { ...subs[idx], score: value };
+      return { ...f, subscores: subs };
+    });
+  };
+
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = { ...form };
       if (editId) {
-        await updateAssessment(patientId, editId, form);
+        await updateAssessment(patientId, editId, payload);
         addToast('Assessment updated', 'success');
       } else {
-        await createAssessment(patientId, form);
+        await createAssessment(patientId, payload);
         addToast('Assessment created', 'success');
       }
       onSaved?.();
@@ -106,15 +153,14 @@ export default function AssessmentForm({
     }
   };
 
-  if (loading) {
-    return <div>Loading assessments…</div>;
-  }
+  if (loading) return <div>Loading assessments…</div>;
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 border p-4 rounded bg-white"
+      className="space-y-6 border p-6 rounded bg-white"
     >
+      {/* Basic Fields */}
       <div className="grid grid-cols-2 gap-4">
         {/* Type */}
         <div>
@@ -125,7 +171,7 @@ export default function AssessmentForm({
             onChange={handleChange}
             className="border px-2 py-1 w-full"
           >
-            {TEST_TYPES.map((t) => (
+            {TEST_TYPES.map(t => (
               <option key={t.label} value={t.label}>
                 {t.label}
               </option>
@@ -164,6 +210,30 @@ export default function AssessmentForm({
           />
         </div>
       </div>
+
+      {/* Subscores Grid (MMSE/MoCA only) */}
+      {(form.assessment_type === 'MMSE' || form.assessment_type === 'MoCA') && (
+        <div>
+          <h4 className="font-semibold mb-2">Subscores</h4>
+          <div className="grid grid-cols-2 gap-4">
+            {form.subscores.map((s, idx) => (
+              <div key={s.name} className="flex items-center space-x-2">
+                <label className="w-48">{s.name}:</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={s.max_score}
+                  value={s.score}
+                  onChange={e => handleSubscoreChange(idx, e.target.value)}
+                  required
+                  className="border px-2 py-1 w-20"
+                />
+                <span>/ {s.max_score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Diagnosis */}
       <div>

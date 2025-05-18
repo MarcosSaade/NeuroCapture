@@ -1,0 +1,60 @@
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+from typing import List, Optional
+
+# ─── Subscore Schemas ─────────────────────────────────────────────────────────
+
+class SubscoreBase(BaseModel):
+    name: str = Field(..., title="Subscore Name", max_length=100)
+    score: float = Field(..., ge=0, title="Subscore Value")
+    max_score: Optional[float] = Field(None, ge=0, title="Maximum Possible Subscore")
+
+class SubscoreCreate(SubscoreBase):
+    pass
+
+class SubscoreRead(SubscoreBase):
+    subscore_id: int
+    assessment_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+# ─── Assessment Schemas ────────────────────────────────────────────────────────
+
+class AssessmentBase(BaseModel):
+    assessment_type: str = Field(..., max_length=50)
+    score: float = Field(..., ge=0)
+    max_possible_score: Optional[float] = None
+    assessment_date: datetime
+    diagnosis: Optional[str] = None
+    notes: Optional[str] = None
+
+class AssessmentCreate(AssessmentBase):
+    # allow nested creation of subscores
+    subscores: Optional[List[SubscoreCreate]] = None
+
+class AssessmentUpdate(BaseModel):
+    assessment_type: Optional[str] = None
+    score: Optional[float] = None
+    max_possible_score: Optional[float] = None
+    assessment_date: Optional[datetime] = None
+    diagnosis: Optional[str] = None
+    notes: Optional[str] = None
+    subscores: Optional[List[SubscoreCreate]] = None  # re-create subscores if provided
+
+class AssessmentInDBBase(AssessmentBase):
+    assessment_id: int
+    patient_id: int
+    created_at: datetime
+    updated_at: datetime
+    # include nested subscores when reading
+    subscores: List[SubscoreRead] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+class AssessmentRead(AssessmentInDBBase):
+    pass
+
+class AssessmentInDB(AssessmentInDBBase):
+    pass
