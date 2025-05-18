@@ -59,7 +59,11 @@ class CognitiveAssessment(Base):
     __tablename__ = "cognitive_assessments"
 
     assessment_id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.patient_id"), nullable=False)
+    patient_id = Column(
+        Integer,
+        ForeignKey("patients.patient_id", ondelete="CASCADE"),
+        nullable=False,
+    )
     assessment_date = Column(DateTime(timezone=True), nullable=False)
     assessment_type = Column(String(50), nullable=False)
     score = Column(Float, nullable=False)

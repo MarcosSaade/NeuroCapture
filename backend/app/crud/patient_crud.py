@@ -1,9 +1,14 @@
+# backend/app/crud/patient_crud.py
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, delete
 from fastapi import HTTPException
-from app.models import Patient as PatientModel
-from app.models import Demographic as DemographicModel
-from fastapi import HTTPException
+
+from app.models import (
+    Patient    as PatientModel,
+    Demographic as DemographicModel,
+    CognitiveAssessment as AssessmentModel,
+)
 from app.schemas.patient_schema import PatientCreate, PatientUpdate
 
 async def create_patient(db: AsyncSession, *, obj_in: PatientCreate) -> PatientModel:
@@ -14,11 +19,15 @@ async def create_patient(db: AsyncSession, *, obj_in: PatientCreate) -> PatientM
     return db_obj
 
 async def get_patient(db: AsyncSession, *, patient_id: int) -> PatientModel | None:
-    result = await db.execute(select(PatientModel).where(PatientModel.patient_id == patient_id))
+    result = await db.execute(
+        select(PatientModel).where(PatientModel.patient_id == patient_id)
+    )
     return result.scalars().first()
 
 async def get_patients(db: AsyncSession, *, skip: int = 0, limit: int = 100) -> list[PatientModel]:
-    result = await db.execute(select(PatientModel).offset(skip).limit(limit))
+    result = await db.execute(
+        select(PatientModel).offset(skip).limit(limit)
+    )
     return result.scalars().all()
 
 async def update_patient(
@@ -27,7 +36,6 @@ async def update_patient(
     db_obj: PatientModel,
     obj_in: PatientUpdate
 ) -> PatientModel:
-    obj_data = db_obj.__dict__
     update_data = obj_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_obj, field, value)
@@ -37,16 +45,26 @@ async def update_patient(
     return db_obj
 
 async def delete_patient(db: AsyncSession, *, patient_id: int) -> None:
-    # delete related demographics first
+    # delete all demographics for this patient
     await db.execute(
         delete(DemographicModel).where(DemographicModel.patient_id == patient_id)
     )
+
+    # delete all cognitive assessments for this patient
+    await db.execute(
+        delete(AssessmentModel).where(AssessmentModel.patient_id == patient_id)
+    )
+
+    # commit those deletions
     await db.commit()
 
-    # then delete the patient
-    result = await db.execute(select(PatientModel).where(PatientModel.patient_id == patient_id))
+    # now delete the patient record itself
+    result = await db.execute(
+        select(PatientModel).where(PatientModel.patient_id == patient_id)
+    )
     db_obj = result.scalars().first()
     if not db_obj:
         raise HTTPException(status_code=404, detail="Patient not found")
+
     await db.delete(db_obj)
     await db.commit()
