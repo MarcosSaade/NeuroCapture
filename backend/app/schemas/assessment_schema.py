@@ -1,11 +1,15 @@
+# backend/app/schemas/assessment_schema.py
+
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+
+# ─── Subscore Schemas ─────────────────────────────────────────────────────────
 
 class SubscoreBase(BaseModel):
     name: str = Field(..., max_length=100)
     score: float = Field(..., ge=0)
-    max_score: float | None = None
+    max_score: Optional[float] = Field(None, ge=0)
 
 class SubscoreCreate(SubscoreBase):
     pass
@@ -16,31 +20,33 @@ class SubscoreRead(SubscoreBase):
     model_config = ConfigDict(from_attributes=True)
 
 class SubscoreUpdate(BaseModel):
-    name: str | None = None
-    score: float | None = None
-    max_score: float | None = None
+    name: Optional[str] = None
+    score: Optional[float] = None
+    max_score: Optional[float] = None
 
+
+# ─── Assessment Schemas ────────────────────────────────────────────────────────
 
 class AssessmentBase(BaseModel):
     assessment_type: str = Field(..., max_length=50)
     score: float = Field(..., ge=0)
-    max_possible_score: float | None = None
+    max_possible_score: Optional[float] = None
     assessment_date: datetime
-    diagnosis: str | None = None
-    notes: str | None = None
+    diagnosis: Optional[str] = None
+    notes: Optional[str] = None
+    subscores: Optional[List[SubscoreCreate]] = None
 
 class AssessmentCreate(AssessmentBase):
-    # allow nested subscores
-    subscores: List[SubscoreCreate] | None = None
+    pass
 
 class AssessmentUpdate(BaseModel):
-    assessment_type: str | None = None
-    score: float | None = None
-    max_possible_score: float | None = None
-    assessment_date: datetime | None = None
-    diagnosis: str | None = None
-    notes: str | None = None
-    subscores: List[SubscoreCreate] | None = None
+    assessment_type: Optional[str] = None
+    score: Optional[float] = None
+    max_possible_score: Optional[float] = None
+    assessment_date: Optional[datetime] = None
+    diagnosis: Optional[str] = None
+    notes: Optional[str] = None
+    subscores: Optional[List[SubscoreCreate]] = None
 
 class AssessmentInDB(AssessmentBase):
     assessment_id: int

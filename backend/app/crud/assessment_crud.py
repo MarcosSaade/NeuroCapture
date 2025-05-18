@@ -1,95 +1,92 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
-from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
-from app.models import (
-    CognitiveAssessment as AssessmentModel,
-    AssessmentSubscore as SubscoreModel,
-)
-from app.schemas.assessment_schema import (
-    AssessmentCreate,
-    AssessmentUpdate,
-    SubscoreCreate,
-)
-
+from app.models import CognitiveAssessment as AssessmentModel, AssessmentSubscore
+from app.schemas.assessment_schema import AssessmentCreate, AssessmentUpdate
+from app.schemas.subscore_schema import SubscoreCreate
 
 async def get_assessments(db: AsyncSession, patient_id: int) -> list[AssessmentModel]:
     result = await db.execute(
         select(AssessmentModel)
         .where(AssessmentModel.patient_id == patient_id)
+        .options(
+            selectinload(AssessmentModel.subscores)  # <— eager load
+        )
         .order_by(AssessmentModel.assessment_date.desc())
     )
     return result.scalars().all()
-
 
 async def get_assessment(db: AsyncSession, assessment_id: int) -> AssessmentModel | None:
     result = await db.execute(
         select(AssessmentModel)
         .where(AssessmentModel.assessment_id == assessment_id)
+        .options(
+            selectinload(AssessmentModel.subscores)
+        )
     )
     return result.scalars().first()
 
-
-async def get_subscores(db: AsyncSession, assessment_id: int) -> list[SubscoreModel]:
-    result = await db.execute(
-        select(SubscoreModel)
-        .where(SubscoreModel.assessment_id == assessment_id)
-    )
-    return result.scalars().all()
-
-
 async def create_assessment(
-    db: AsyncSession,
-    patient_id: int,
-    obj_in: AssessmentCreate
+    db: AsyncSession, patient_id: int, obj_in: AssessmentCreate
 ) -> AssessmentModel:
-    data = obj_in.model_dump()
-    subs = data.pop("subscores", None) or []
-    db_obj = AssessmentModel(patient_id=patient_id, **data)
+    # First, insert the assessment itself
+    db_obj = AssessmentModel(
+        patient_id=patient_id,
+        **obj_in.model_dump(exclude={'subscores'})  # don’t pass subscores here
+    )
     db.add(db_obj)
     await db.commit()
     await db.refresh(db_obj)
 
-    # create nested subscores
-    for s in subs:
-        sub_obj = SubscoreModel(assessment_id=db_obj.assessment_id, **s)
-        db.add(sub_obj)
-    if subs:
+    # Then insert any subscores (if present)
+    for sub in obj_in.subscores or []:
+        db.add(AssessmentSubscore(
+            assessment_id=db_obj.assessment_id,
+            **sub.model_dump()
+        ))
+    if obj_in.subscores:
         await db.commit()
-    await db.refresh(db_obj)
-    return db_obj
 
+    # Finally re-query with subscores eagerly loaded
+    result = await db.execute(
+        select(AssessmentModel)
+        .where(AssessmentModel.assessment_id == db_obj.assessment_id)
+        .options(selectinload(AssessmentModel.subscores))
+    )
+    return result.scalars().one()
 
 async def update_assessment(
-    db: AsyncSession,
-    db_obj: AssessmentModel,
-    obj_in: AssessmentUpdate
+    db: AsyncSession, db_obj: AssessmentModel, obj_in: AssessmentUpdate
 ) -> AssessmentModel:
-    data = obj_in.model_dump(exclude_unset=True)
-    subs = data.pop("subscores", None)
-
-    # update assessment fields
+    data = obj_in.model_dump(exclude_unset=True, exclude={'subscores'})
     for field, val in data.items():
         setattr(db_obj, field, val)
     db.add(db_obj)
     await db.commit()
 
-    # replace subscores if provided
-    if subs is not None:
+    # If the caller provided a new subscores list, wipe & re-insert:
+    if obj_in.subscores is not None:
         # delete existing
         await db.execute(
-            delete(SubscoreModel)
-            .where(SubscoreModel.assessment_id == db_obj.assessment_id)
+            delete(AssessmentSubscore)
+            .where(AssessmentSubscore.assessment_id == db_obj.assessment_id)
         )
-        # create new
-        for s in subs:
-            sub_obj = SubscoreModel(assessment_id=db_obj.assessment_id, **s)
-            db.add(sub_obj)
+        # insert new
+        for sub in obj_in.subscores:
+            db.add(AssessmentSubscore(
+                assessment_id=db_obj.assessment_id,
+                **sub.model_dump()
+            ))
         await db.commit()
 
-    await db.refresh(db_obj)
-    return db_obj
-
+    # Re-fetch with subscores
+    result = await db.execute(
+        select(AssessmentModel)
+        .where(AssessmentModel.assessment_id == db_obj.assessment_id)
+        .options(selectinload(AssessmentModel.subscores))
+    )
+    return result.scalars().one()
 
 async def delete_assessment(db: AsyncSession, assessment_id: int) -> None:
     obj = await get_assessment(db, assessment_id)

@@ -2,6 +2,10 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import List, Optional
 
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+from typing import List, Optional
+
 # ─── Subscore Schemas ─────────────────────────────────────────────────────────
 
 class SubscoreBase(BaseModel):
@@ -12,6 +16,11 @@ class SubscoreBase(BaseModel):
 class SubscoreCreate(SubscoreBase):
     pass
 
+class SubscoreUpdate(BaseModel):
+    name: Optional[str] = Field(None, title="Subscore Name", max_length=100)
+    score: Optional[float] = Field(None, ge=0, title="Subscore Value")
+    max_score: Optional[float] = Field(None, ge=0, title="Maximum Possible Subscore")
+
 class SubscoreRead(SubscoreBase):
     subscore_id: int
     assessment_id: int
@@ -19,6 +28,7 @@ class SubscoreRead(SubscoreBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
 
 # ─── Assessment Schemas ────────────────────────────────────────────────────────
 
