@@ -29,4 +29,23 @@ export async function deletePatient(id) {
   await api.delete(`/patients/${id}`);
 }
 
+export async function fetchPatient(patientId) {
+  const { data } = await axios.get(`/api/v1/patients/${patientId}`)
+  return data
+}
+
+export async function fetchDemographics(patientId) {
+  const { data } = await axios.get(
+    `/api/v1/patients/${patientId}/demographics/`
+  )
+  return data
+}
+
+export async function fetchAssessments(patientId) {
+  const { data } = await axios.get(
+    `/api/v1/patients/${patientId}/assessments/`
+  )
+  return data
+}
+
 export default api;

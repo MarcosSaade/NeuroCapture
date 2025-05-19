@@ -1,18 +1,43 @@
-# backend/app/api/v1/endpoints/recordings.py
+import os, shutil
+from uuid import uuid4
+from datetime import datetime, timezone
 
-from datetime import datetime
-from fastapi import APIRouter, Depends, UploadFile, File, Form, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    UploadFile,
+    File,
+    Form,
+    HTTPException,
+    status,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_db
 from app.crud.audio_crud import create_audio_recording, get_recordings_for_assessment
-from app.schemas.audio_schema import AudioRecordingCreate
-from app.schemas.audio_schema import AudioRecordingRead
+from app.schemas.audio_schema import AudioRecordingCreate, AudioRecordingRead
 
 router = APIRouter(
     prefix="/patients/{patient_id}/assessments/{assessment_id}/recordings",
     tags=["recordings"],
 )
+
+# where on disk we save files
+UPLOAD_DIR = os.getenv("AUDIO_UPLOAD_DIR", "uploads/recordings")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+@router.get(
+    "/",
+    response_model=list[AudioRecordingRead],
+)
+async def list_recordings(
+    patient_id: int,
+    assessment_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    return await get_recordings_for_assessment(db, assessment_id)
+
 
 @router.post(
     "/",
@@ -20,31 +45,46 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_recording(
-    *,
     patient_id: int,
     assessment_id: int,
+    # the actual file
     file: UploadFile = File(...),
-    recording_date: datetime = Form(...),
-    recording_device: str = Form(...),
-    task_type: str = Form(None),
+    # pull these two out of the same multipart form
+    task_type: str = Form(..., title="Test Name"),
+    recording_device: str | None = Form(None, title="Recording Device"),
     db: AsyncSession = Depends(get_db),
-) -> AudioRecordingRead:
-    meta = AudioRecordingCreate(
-        filename=file.filename,
-        recording_date=recording_date,
-        recording_device=recording_device,
-        task_type=task_type,
-    )
-    return await create_audio_recording(db, assessment_id, file, meta)
+):
+    # save to disk
+    ext = os.path.splitext(file.filename)[1]
+    unique_name = f"{uuid4().hex}{ext}"
+    dest_path = os.path.join(UPLOAD_DIR, unique_name)
+    try:
+        with open(dest_path, "wb") as out:
+            shutil.copyfileobj(file.file, out)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not save file: {e}"
+        )
 
-@router.get(
-    "/",
-    response_model=list[AudioRecordingRead],
-)
-async def list_recordings(
-    *,
-    patient_id: int,
-    assessment_id: int,
-    db: AsyncSession = Depends(get_db),
-) -> list[AudioRecordingRead]:
-    return await get_recordings_for_assessment(db, assessment_id)
+    # build the metadata object
+    audio_in = AudioRecordingCreate(
+        filename=file.filename,
+        file_path=f"/uploads/recordings/{unique_name}",
+        recording_date=datetime.now(timezone.utc),
+        task_type=task_type,
+        recording_device=recording_device,
+    )
+
+    # insert into DB
+    try:
+        db_obj = await create_audio_recording(db, assessment_id, audio_in)
+    except Exception as e:
+        # if DB write fails, remove the file we just wrote
+        os.remove(dest_path)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not create audio record: {e}"
+        )
+
+    return db_obj
