@@ -1,89 +1,106 @@
-// src/App.jsx
-
+// frontend/renderer/src/App.jsx
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import PatientTable from './components/PatientTable';
 import NewPatientForm from './components/NewPatientForm';
 import PatientDetail from './components/PatientDetail';
 import Modal from './components/Modal';
-import { NotificationProvider } from './context/NotificationContext';
+import { NotificationProvider, useNotifications } from './context/NotificationContext';
+import { ToastContainer } from './components/Toast'; 
 import PatientDetailPage from './pages/PatientDetailPage';
 
-function Header({ onAdd }) {
+function Header({ onAddPatient }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <h1 className="text-2xl font-bold">NeuroCapture – Patients</h1>
-      <button
-        onClick={onAdd}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
+    <header className="bg-slate-800 text-white shadow-md">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="text-2xl font-bold hover:text-slate-300 transition-colors">
+          NeuroCapture
+        </Link>
+        <button
+          onClick={onAddPatient}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow transition-colors"
+        >
+          Add Patient
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function AppContent() {
+  const [addPatientModalOpen, setAddPatientModalOpen] = useState(false);
+  const [editingPatientId, setEditingPatientId] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0); // Used to trigger re-fetch in PatientTable
+
+  const handlePatientAdded = () => {
+    setAddPatientModalOpen(false);
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handlePatientModalClosed = () => {
+    setEditingPatientId(null);
+    setRefreshKey(prev => prev + 1); // Refresh table after edit modal closes
+  };
+  
+  const handlePatientDeleted = () => {
+    setEditingPatientId(null); // Close modal if patient was deleted from it
+    setRefreshKey(prev => prev + 1);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100">
+      <Header onAddPatient={() => setAddPatientModalOpen(true)} />
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <PatientTable
+                onEdit={(id) => setEditingPatientId(id)}
+                refresh={refreshKey}
+              />
+            }
+          />
+          <Route
+            path="/patients/:patientId" // Changed from :id to :patientId for clarity
+            element={<PatientDetailPage />}
+          />
+        </Routes>
+      </main>
+
+      <Modal
+        isOpen={addPatientModalOpen}
+        onClose={() => setAddPatientModalOpen(false)}
+        title="Add New Patient"
+        size="xl"
       >
-        Add Patient
-      </button>
+        <NewPatientForm onSuccess={handlePatientAdded} />
+      </Modal>
+
+      {editingPatientId && (
+        <Modal
+          isOpen={editingPatientId !== null}
+          onClose={handlePatientModalClosed}
+          title={`Edit Patient (ID: ${editingPatientId})`}
+          size="5xl" // Increased size for tabs
+        >
+          <PatientDetail
+            patientId={editingPatientId}
+            onSuccess={handlePatientModalClosed} // General success (e.g. study ID update)
+            onDeleted={handlePatientDeleted} // Specifically after patient deletion
+          />
+        </Modal>
+      )}
+      <ToastContainer />
     </div>
   );
 }
 
 export default function App() {
-  const [addOpen, setAddOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [refreshCount, setRefreshCount] = useState(0);
-
-  const handleAddSuccess = () => {
-    setAddOpen(false);
-    setRefreshCount((c) => c + 1);
-  };
-
-  const handleEditSuccess = () => {
-    setEditId(null);
-    setRefreshCount((c) => c + 1);
-  };
-
   return (
     <NotificationProvider>
       <Router>
-        <div className="container mx-auto p-4">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <Header onAdd={() => setAddOpen(true)} />
-
-                  <PatientTable
-                    onEdit={(id) => setEditId(id)}
-                    refresh={refreshCount}
-                  />
-
-                  <Modal
-                    isOpen={addOpen}
-                    onClose={() => setAddOpen(false)}
-                    title="Add New Patient"
-                  >
-                    <NewPatientForm onSuccess={handleAddSuccess} />
-                  </Modal>
-
-                  <Modal
-                    isOpen={editId !== null}
-                    onClose={() => setEditId(null)}
-                    title="Edit Patient"
-                  >
-                    {editId !== null && (
-                      <PatientDetail
-                      patientId={editId}
-                      onSuccess={handleEditSuccess}
-                    />
-                    )}
-                  </Modal>
-                </>
-              }
-            />
-
-            <Route
-              path="/patients/:id"
-              element={<PatientDetailPage />}
-            />
-          </Routes>
-        </div>
+        <AppContent />
       </Router>
     </NotificationProvider>
   );

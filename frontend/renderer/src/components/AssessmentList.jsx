@@ -1,67 +1,61 @@
-// src/components/AssessmentList.jsx
-
+// frontend/renderer/src/components/AssessmentList.jsx
 import React from 'react';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-export default function AssessmentList({
-  assessments,
-  onEdit,
-  onDelete
-}) {
-  if (!assessments.length) {
-    return <div className="text-gray-500">No assessments yet.</div>;
+export default function AssessmentList({ assessments, onEdit, onDelete }) {
+  if (!assessments || assessments.length === 0) {
+    return <p className="text-center text-gray-500 py-4">No assessments recorded yet.</p>;
   }
 
   return (
-    <table className="table-auto w-full mt-4 border-collapse">
-      <thead>
-        <tr>
-          <th className="px-2 py-1 border-b">Type</th>
-          <th className="px-2 py-1 border-b">Score</th>
-          <th className="px-2 py-1 border-b">Date</th>
-          <th className="px-2 py-1 border-b">Diagnosis</th>
-          <th className="px-2 py-1 border-b">Notes</th>
-          <th className="px-2 py-1 border-b">Subscores</th>
-          <th className="px-2 py-1 border-b">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {assessments.map(a => (
-          <tr key={a.assessment_id} className="hover:bg-gray-50">
-            <td className="px-2 py-1">{a.assessment_type}</td>
-            <td className="px-2 py-1">
-              {a.score} / {a.max_possible_score ?? '–'}
-            </td>
-            <td className="px-2 py-1">
-              {new Date(a.assessment_date).toLocaleString()}
-            </td>
-            <td className="px-2 py-1">{a.diagnosis || '-'}</td>
-            <td className="px-2 py-1">{a.notes || '-'}</td>
-            <td className="px-2 py-1">
-              {a.subscores && a.subscores.length > 0
-                ? a.subscores
-                    .map(
-                      s => `${s.name}: ${s.score}/${s.max_score}`
-                    )
-                    .join(', ')
-                : '-'}
-            </td>
-            <td className="px-2 py-1 space-x-2">
-              <button
-                onClick={() => onEdit(a)}
-                className="text-blue-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDelete(a.assessment_id)}
-                className="text-red-600"
-              >
-                Delete
-              </button>
-            </td>
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnosis</th>
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscores</th>
+            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {assessments.map(a => (
+            <tr key={a.assessment_id} className="hover:bg-gray-50 transition-colors">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{a.assessment_type}</td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                {a.score} / {a.max_possible_score ?? 'N/A'}
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                {new Date(a.assessment_date).toLocaleDateString()}
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{a.diagnosis || <span className="italic text-gray-400">None</span>}</td>
+              <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={a.subscores?.map(s => `${s.name}: ${s.score}/${s.max_score || 'N/A'}`).join('; ') || ''}>
+                {a.subscores && a.subscores.length > 0
+                  ? `${a.subscores.length} subscore(s)`
+                  : <span className="italic text-gray-400">None</span>}
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-2">
+                <button
+                  onClick={() => onEdit(a)}
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                  title="Edit Assessment"
+                >
+                  <PencilSquareIcon className="h-5 w-5 inline-block" />
+                </button>
+                <button
+                  onClick={() => onDelete(a.assessment_id)}
+                  className="text-red-600 hover:text-red-800 transition-colors"
+                  title="Delete Assessment"
+                >
+                  <TrashIcon className="h-5 w-5 inline-block" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
