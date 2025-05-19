@@ -1,17 +1,14 @@
-// src/api/recording.js
+// frontend/renderer/src/api/recording.js
 import axios from 'axios';
 
-export async function uploadRecording(patientId, assessmentId, file, metadata) {
-  const form = new FormData();
-  form.append('file', file);
-  form.append('task_type', metadata.testName);           // matches Form(...) name
-  form.append('recording_device', metadata.deviceType);  // matches Form(...) name
-
+// The backend endpoint expects FormData with fields: 'file', 'task_type', 'recording_device'
+export async function uploadRecording(patientId, assessmentId, formDataToUpload) {
   const resp = await axios.post(
     `/api/v1/patients/${patientId}/assessments/${assessmentId}/recordings/`,
-    form,
+    formDataToUpload, // Send the pre-constructed FormData directly
     {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: {
+      }
     }
   );
   return resp.data;

@@ -2,12 +2,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNotifications } from '../context/NotificationContext';
 
-const TEST_TYPES = [
+// Filtered list for general cognitive assessments
+const COGNITIVE_TEST_TYPES = [
   { label: 'MMSE', max: 30 },
   { label: 'MoCA', max: 30 },
-  { label: 'Verbal Fluency - Animals', max: null },
-  { label: 'Cookie Theft Description', max: null },
-  { label: 'Other', max: null },
+  { label: 'Other', max: null }, // For custom scored tests
 ];
 
 const SUBSCORES_PRESETS = {
@@ -24,9 +23,9 @@ const SUBSCORES_PRESETS = {
 };
 
 const getDefaultFormState = () => ({
-  assessment_type: 'MMSE',
+  assessment_type: COGNITIVE_TEST_TYPES[0].label, // Default to MMSE
   score: '',
-  max_possible_score: 30,
+  max_possible_score: COGNITIVE_TEST_TYPES[0].max,
   assessment_date: new Date().toISOString().slice(0, 16), // datetime-local format
   diagnosis: '',
   notes: '',
@@ -37,7 +36,7 @@ export default function AssessmentForm({
   patientId,
   initialData = null,
   onSaved,
-  onCancel, // Added cancel handler
+  onCancel, 
 }) {
   const { addToast } = useNotifications();
   const [form, setForm] = useState(getDefaultFormState());
@@ -47,10 +46,15 @@ export default function AssessmentForm({
 
   useEffect(() => {
     if (initialData) {
+      // Ensure the initialData.assessment_type is one of the COGNITIVE_TEST_TYPES
+      // If not, it might be an audio test being mistakenly edited here, or 'Other'
+      const initialTypeIsValid = COGNITIVE_TEST_TYPES.some(t => t.label === initialData.assessment_type);
+      const typeToSet = initialTypeIsValid ? initialData.assessment_type : 'Other';
+      
       setForm({
-        assessment_type: initialData.assessment_type,
+        assessment_type: typeToSet,
         score: initialData.score.toString(),
-        max_possible_score: initialData.max_possible_score ?? TEST_TYPES.find(t => t.label === initialData.assessment_type)?.max ?? null,
+        max_possible_score: initialData.max_possible_score ?? COGNITIVE_TEST_TYPES.find(t => t.label === typeToSet)?.max ?? null,
         assessment_date: initialData.assessment_date ? new Date(initialData.assessment_date).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
         diagnosis: initialData.diagnosis || '',
         notes: initialData.notes || '',
@@ -58,7 +62,7 @@ export default function AssessmentForm({
           name: s.name,
           score: s.score.toString(),
           max_score: s.max_score,
-        })) || SUBSCORES_PRESETS[initialData.assessment_type]?.map(([name, max]) => ({ name, score: '', max_score: max })) || [],
+        })) || SUBSCORES_PRESETS[typeToSet]?.map(([name, max]) => ({ name, score: '', max_score: max })) || [],
       });
     } else {
       setForm(getDefaultFormState());
@@ -66,7 +70,7 @@ export default function AssessmentForm({
   }, [initialData]);
 
   useEffect(() => {
-    const typeObj = TEST_TYPES.find(t => t.label === form.assessment_type);
+    const typeObj = COGNITIVE_TEST_TYPES.find(t => t.label === form.assessment_type);
     const presets = SUBSCORES_PRESETS[form.assessment_type] || [];
     
     setForm(f => ({
@@ -110,9 +114,8 @@ export default function AssessmentForm({
           ...s,
           score: parseFloat(s.score),
           max_score: s.max_score ? parseFloat(s.max_score) : null,
-        })).filter(s => s.score !== '' && !isNaN(s.score)), // Only include subscores with a value
+        })).filter(s => s.score !== '' && !isNaN(s.score)), 
       };
-      // API call is handled by parent (PatientDetail)
       onSaved(payload, isEditing ? initialData.assessment_id : null);
     } catch(err) {
       addToast(`Save failed: ${err.message}`, 'error');
@@ -133,7 +136,7 @@ export default function AssessmentForm({
             onChange={handleChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
-            {TEST_TYPES.map(t => (
+            {COGNITIVE_TEST_TYPES.map(t => (
               <option key={t.label} value={t.label}>{t.label}</option>
             ))}
           </select>
