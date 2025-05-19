@@ -30,3 +30,6 @@ Thumbs.db
 *.tsbuildinfo
 *.bak
 *.tmp
+
+dump.sh
+neurocapture_snapshot.txt
