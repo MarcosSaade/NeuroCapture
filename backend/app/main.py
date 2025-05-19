@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import patients, demographics
 from app.api.v1.endpoints.assessments import router as assessments_router
 from app.api.v1.endpoints.subscores import router as subscores_router
+from app.api.v1.endpoints.recordings import router as recordings_router
+from app.api.v1.endpoints.features import router as features_router
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="NeuroCapture API",
@@ -18,7 +21,11 @@ app.add_middleware(
     allow_headers=["*"],    # allow all headers
 )
 
+app.mount("/uploads", StaticFiles(directory="uploads/recordings"), name="uploads")
+
 app.include_router(patients.router, prefix="/api/v1")
 app.include_router(demographics.router, prefix="/api/v1")
 app.include_router(assessments_router, prefix="/api/v1")
 app.include_router(subscores_router, prefix="/api/v1")
+app.include_router(recordings_router, prefix="/api/v1")
+app.include_router(features_router, prefix="/api/v1")

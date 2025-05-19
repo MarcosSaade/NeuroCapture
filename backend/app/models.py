@@ -119,7 +119,7 @@ class AudioRecording(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     assessment = relationship("CognitiveAssessment", back_populates="audio_recordings")
-    features = relationship("AudioFeature", back_populates="recording")
+    features = relationship("AudioFeature", back_populates="recording", cascade="all, delete-orphan", passive_deletes=True)
     interpretation = relationship("Interpretation", back_populates="audio_recordings")
     prediction = relationship("ModelPrediction", back_populates="audio_recordings")
 
@@ -128,13 +128,18 @@ class AudioFeature(Base):
     __tablename__ = "audio_features"
 
     feature_id = Column(Integer, primary_key=True, index=True)
-    recording_id = Column(Integer, ForeignKey("audio_recordings.recording_id"), nullable=False)
-    feature_name = Column(String(50), nullable=False)
-    feature_value = Column(Float, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
+    recording_id = Column(
+      Integer,
+      ForeignKey("audio_recordings.recording_id", ondelete="CASCADE"),
+      nullable=False
+    )
+    feature_name  = Column(String(50), nullable=False)
+    feature_value = Column(Float,  nullable=False)
+    created_at    = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at    = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     recording = relationship("AudioRecording", back_populates="features")
+
 
 
 class Interpretation(Base):
