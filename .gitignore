@@ -31,5 +31,8 @@ Thumbs.db
 *.bak
 *.tmp
 
+# Uploads
+uploads/
+
 dump.sh
 neurocapture_snapshot.txt
