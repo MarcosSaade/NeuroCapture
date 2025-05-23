@@ -104,10 +104,23 @@ export default function PatientDetail({ patientId, onSuccess, onDeleted }) {
     }
   };
 
-  const handleAssessmentSaved = () => {
-    setEditingAssessment(null); // Clear edit form
-    loadAssessmentsData();    // Reload list
-    addToast('Assessment saved successfully', 'success');
+  const handleAssessmentSaved = async (payload, assessmentId) => {
+    try {
+      if (assessmentId) {
+        // This is an update
+        await updateAssessment(patientId, assessmentId, payload);
+        addToast('Assessment updated successfully', 'success');
+      } else {
+        // This is a new assessment
+        await createAssessment(patientId, payload);
+        addToast('Assessment created successfully', 'success');
+      }
+      setEditingAssessment(null); // Clear edit form
+      loadAssessmentsData();    // Reload list
+    } catch (err) {
+      addToast(`Failed to save assessment: ${err.message}`, 'error');
+      // Optionally, you might not want to clear the form or reload data if save failed
+    }
   };
 
   const handleEditAssessment = (assessment) => {

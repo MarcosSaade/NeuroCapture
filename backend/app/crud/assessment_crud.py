@@ -41,10 +41,8 @@ async def create_assessment(
 
     # Then insert any subscores (if present)
     for sub in obj_in.subscores or []:
-        db.add(AssessmentSubscore(
-            assessment_id=db_obj.assessment_id,
-            **sub.model_dump()
-        ))
+        current_sub_db = AssessmentSubscore(assessment_id=db_obj.assessment_id, **sub.model_dump())
+        db.add(current_sub_db)
     if obj_in.subscores:
         await db.commit()
 
