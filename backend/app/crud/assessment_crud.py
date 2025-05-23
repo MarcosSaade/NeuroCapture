@@ -81,6 +81,7 @@ async def update_assessment(
         await db.commit()
 
     # Re-fetch with subscores
+    await db.refresh(db_obj)  # Refresh the main object to sync with DB
     result = await db.execute(
         select(AssessmentModel)
         .where(AssessmentModel.assessment_id == db_obj.assessment_id)

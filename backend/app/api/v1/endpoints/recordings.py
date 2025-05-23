@@ -44,6 +44,12 @@ async def list_recordings(
     response_model=AudioRecordingRead,
     status_code=status.HTTP_201_CREATED,
 )
+@router.post(
+    "", 
+    response_model=AudioRecordingRead, 
+    status_code=status.HTTP_201_CREATED, 
+    include_in_schema=False
+)
 async def upload_recording(
     patient_id: int,
     assessment_id: int,

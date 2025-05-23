@@ -18,7 +18,7 @@ async def test_create_and_read_patient(client):
     assert rd["patient_id"] == pid
     assert rd["study_identifier"] == "TEST-123"
     # Timestamps are UTC strings
-    created = datetime.fromisoformat(rd["created_at"])
+    created = datetime.fromisoformat(rd["created_at"].replace("Z", "+00:00"))
     assert created.tzinfo == timezone.utc
 
 @pytest.mark.asyncio
