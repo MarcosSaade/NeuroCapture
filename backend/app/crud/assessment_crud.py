@@ -1,5 +1,6 @@
+from fastapi import HTTPException # Added HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete 
 from sqlalchemy.orm import selectinload
 
 from app.models import CognitiveAssessment as AssessmentModel, AssessmentSubscore
@@ -79,6 +80,7 @@ async def update_assessment(
                 **sub.model_dump()
             ))
         await db.commit()
+        await db.refresh(db_obj, attribute_names=['subscores']) # Ensure relationship is updated on the instance
 
     # Re-fetch with subscores
     result = await db.execute(
