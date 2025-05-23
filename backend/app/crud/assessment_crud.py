@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
+
+from fastapi import HTTPException
 
 from app.models import CognitiveAssessment as AssessmentModel, AssessmentSubscore
 from app.schemas.assessment_schema import AssessmentCreate, AssessmentUpdate
@@ -11,7 +13,7 @@ async def get_assessments(db: AsyncSession, patient_id: int) -> list[AssessmentM
         select(AssessmentModel)
         .where(AssessmentModel.patient_id == patient_id)
         .options(
-            selectinload(AssessmentModel.subscores)  # <— eager load
+            selectinload(AssessmentModel.subscores) 
         )
         .order_by(AssessmentModel.assessment_date.desc())
     )

@@ -4,6 +4,7 @@ sys.path.insert(0, ROOT)
 
 # tests/conftest.py
 import asyncio
+import uuid # Import the uuid module
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
@@ -63,3 +64,15 @@ def client(db_session):
     # Teardown
     asyncio.get_event_loop().run_until_complete(client.aclose())
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def test_patient(client: AsyncClient):
+    """Create a new patient for testing and yield its data."""
+    patient_data = {
+        "study_identifier": f"TestPatient-{uuid.uuid4()}" # Generate unique study_identifier
+    }
+    response = await client.post("/api/v1/patients/", json=patient_data)
+    assert response.status_code == 201, f"Failed to create patient: {response.text}"
+    patient_json = response.json()
+    yield patient_json
