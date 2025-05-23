@@ -18,7 +18,7 @@ from app.crud.audio_crud import create_audio_recording, get_recordings_for_asses
 from app.schemas.audio_schema import AudioRecordingCreate, AudioRecordingRead
 
 router = APIRouter(
-    prefix="/patients/{patient_id}/assessments/{assessment_id}/recordings/",
+    prefix="/patients/{patient_id}/assessments/{assessment_id}/recordings",
     tags=["recordings"],
 )
 
