@@ -4,3 +4,13 @@ sqlalchemy
 asyncpg
 pydantic
 python-dotenv
+numpy
+librosa
+noisereduce
+praat-parselmouth
+scipy
+webrtcvad
+matplotlib
+pandas
+tqdm
+soundfile

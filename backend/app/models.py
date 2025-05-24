@@ -107,7 +107,7 @@ class AudioRecording(Base):
     __tablename__ = "audio_recordings"
 
     recording_id = Column(Integer, primary_key=True, index=True)
-    assessment_id = Column(Integer, ForeignKey("cognitive_assessments.assessment_id"), nullable=False)
+    assessment_id = Column(Integer, ForeignKey("cognitive_assessments.assessment_id", ondelete="CASCADE"), nullable=False)
     file_path = Column(String(255), nullable=False)
     filename = Column(String(100), nullable=False)
     recording_date = Column(DateTime(timezone=True), nullable=False)

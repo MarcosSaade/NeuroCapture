@@ -14,7 +14,11 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_db
-from app.crud.audio_crud import create_audio_recording, get_recordings_for_assessment
+from app.crud.audio_crud import (
+    create_audio_recording,
+    get_recordings_for_assessment,
+    delete_recording,
+)
 from app.schemas.audio_schema import AudioRecordingCreate, AudioRecordingRead
 
 router = APIRouter(
@@ -45,10 +49,10 @@ async def list_recordings(
     status_code=status.HTTP_201_CREATED,
 )
 @router.post(
-    "", 
-    response_model=AudioRecordingRead, 
-    status_code=status.HTTP_201_CREATED, 
-    include_in_schema=False
+    "",
+    response_model=AudioRecordingRead,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
 )
 async def upload_recording(
     patient_id: int,
@@ -70,7 +74,7 @@ async def upload_recording(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Could not save file: {e}"
+            detail=f"Could not save file: {e}",
         )
 
     # build the metadata object
@@ -90,7 +94,64 @@ async def upload_recording(
         os.remove(dest_path)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Could not create audio record: {e}"
+            detail=f"Could not create audio record: {e}",
         )
 
     return db_obj
+
+
+@router.delete(
+    "/{recording_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_recording_endpoint(
+    patient_id: int,
+    assessment_id: int,
+    recording_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete a recording by its ID.
+    """
+    from app.crud.audio_crud import get_recording
+    
+    try:
+        # Get the recording first to get the file path
+        recording = await get_recording(db, recording_id)
+        if not recording:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Recording not found"
+            )
+        
+        # Delete from database
+        await delete_recording(db, recording_id)
+        
+        # Try to delete the physical file
+        try:
+            file_path = recording.file_path
+            if file_path.startswith('/uploads/recordings/'):
+                # Remove the leading slash to get relative path from current directory
+                relative_path = file_path[1:]  # Remove leading '/'
+                full_path = relative_path  # Use relative path directly
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+                    print(f"Successfully deleted file: {full_path}")
+                else:
+                    print(f"File not found for deletion: {full_path}")
+            else:
+                # Handle absolute paths or other formats
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    print(f"Successfully deleted file: {file_path}")
+        except Exception as file_error:
+            print(f"Warning: Could not delete file {recording.file_path}: {file_error}")
+        
+        return None
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not delete recording: {e}",
+        )

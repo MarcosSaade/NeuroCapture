@@ -93,5 +93,42 @@ async def delete_assessment(db: AsyncSession, assessment_id: int) -> None:
     obj = await get_assessment(db, assessment_id)
     if not obj:
         raise HTTPException(status_code=404, detail="Assessment not found")
-    await db.delete(obj)
-    await db.commit()
+    
+    # Get all recordings for this assessment to delete their files
+    from app.crud.audio_crud import get_recordings_for_assessment
+    import os
+    
+    try:
+        recordings = await get_recordings_for_assessment(db, assessment_id)
+        
+        # Delete physical audio files
+        for recording in recordings:
+            try:
+                file_path = recording.file_path
+                if file_path.startswith('/uploads/recordings/'):
+                    # Remove the leading slash to get relative path
+                    relative_path = file_path[1:]
+                    if os.path.exists(relative_path):
+                        os.remove(relative_path)
+                        print(f"Deleted audio file: {relative_path}")
+                        
+                    # Also try to delete cleaned version if it exists
+                    base, ext = os.path.splitext(relative_path)
+                    cleaned_path = f"{base}_cleaned{ext}"
+                    if os.path.exists(cleaned_path):
+                        os.remove(cleaned_path)
+                        print(f"Deleted cleaned audio file: {cleaned_path}")
+                        
+            except Exception as file_error:
+                print(f"Warning: Could not delete audio file {recording.file_path}: {file_error}")
+        
+        # Delete assessment (CASCADE will handle recordings and features)
+        await db.delete(obj)
+        await db.commit()
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Could not delete assessment: {e}"
+        )
