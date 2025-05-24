@@ -74,6 +74,32 @@ export default function PatientDetail({ patientId, onSuccess, onDeleted }) {
     }
   }, [patientId, addToast]);
 
+  // Auto-select first assessment that has audio recordings when assessments load
+  useEffect(() => {
+    const selectFirstAssessmentWithAudio = async () => {
+      if (assessments.length > 0 && !selectedAssessmentForAudio && !loadingAssessments) {
+        // Check each assessment for audio recordings, starting from the first
+        for (const assessment of assessments) {
+          try {
+            const recordingsData = await api.get(
+              `/patients/${patientId}/assessments/${assessment.assessment_id}/recordings/`
+            );
+            if (recordingsData.data && recordingsData.data.length > 0) {
+              // Found an assessment with audio recordings, select it
+              setSelectedAssessmentForAudio(assessment);
+              setSelectedAssessmentRecordings(recordingsData.data);
+              break;
+            }
+          } catch (err) {
+            console.error('Error checking recordings for assessment:', err);
+          }
+        }
+      }
+    };
+
+    selectFirstAssessmentWithAudio();
+  }, [assessments, selectedAssessmentForAudio, loadingAssessments, patientId]);
+
   useEffect(() => {
     loadPatientData();
     loadAssessmentsData();

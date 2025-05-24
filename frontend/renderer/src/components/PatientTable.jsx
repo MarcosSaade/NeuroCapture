@@ -105,33 +105,6 @@ export default function PatientTable({ onEdit, refresh }) {
     }));
   };
   
-  const exportCSV = () => {
-    const headers = ['Patient ID','Study ID','Created At','Updated At']; // Adjusted to actual fields
-    const rows = filteredAndSortedPatients.map(p => [
-      p.patient_id,
-      p.study_identifier,
-      new Date(p.created_at).toLocaleString(),
-      new Date(p.updated_at).toLocaleString()
-    ]);
-    const csvContent = [headers, ...rows]
-      .map(r => r.map(String).map(s => `"${s.replace(/"/g,'""')}"`).join(','))
-      .join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'patients_export.csv');
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-    addToast('CSV export initiated.', 'info');
-  };
-
   const exportFeatures = async () => {
     try {
       await exportFeaturesCSV();
@@ -153,14 +126,6 @@ export default function PatientTable({ onEdit, refresh }) {
           className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
         <div className="flex gap-2">
-          <button
-            onClick={exportCSV}
-            disabled={filteredAndSortedPatients.length === 0}
-            className="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-colors"
-          >
-            <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
-            Export Patients CSV
-          </button>
           <button
             onClick={exportFeatures}
             className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
