@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchPatients, deletePatient } from '../api/patient';
+import { exportFeaturesCSV } from '../api/export';
 import { useNotifications } from '../context/NotificationContext';
 import { TableCellsIcon, PencilSquareIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'; // Using outline icons
 
@@ -131,6 +132,15 @@ export default function PatientTable({ onEdit, refresh }) {
     addToast('CSV export initiated.', 'info');
   };
 
+  const exportFeatures = async () => {
+    try {
+      await exportFeaturesCSV();
+      addToast('Features export initiated.', 'info');
+    } catch (error) {
+      addToast(`Features export failed: ${error.message}`, 'error');
+    }
+  };
+
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6">
@@ -142,14 +152,23 @@ export default function PatientTable({ onEdit, refresh }) {
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
-        <button
-          onClick={exportCSV}
-          disabled={filteredAndSortedPatients.length === 0}
-          className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-colors"
-        >
-          <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
-          Export CSV
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={exportCSV}
+            disabled={filteredAndSortedPatients.length === 0}
+            className="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-colors"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+            Export Patients CSV
+          </button>
+          <button
+            onClick={exportFeatures}
+            className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+            Export Features CSV
+          </button>
+        </div>
       </div>
 
       {loading && <p className="text-center py-4 text-gray-500">Loading patients...</p>}

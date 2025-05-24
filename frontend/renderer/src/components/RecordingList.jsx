@@ -199,13 +199,19 @@ export default function RecordingList({
                 {/* Feature Extraction Button */}
                 <button
                   onClick={() => startFeatureExtraction(r.recording_id)}
-                  disabled={isProcessing}
+                  disabled={isProcessing || (recordingFeatures && recordingFeatures.length > 0)}
                   className={`p-1 transition-colors ${
-                    isProcessing 
+                    isProcessing || (recordingFeatures && recordingFeatures.length > 0)
                       ? 'text-gray-400 cursor-not-allowed' 
                       : 'text-green-600 hover:text-green-800'
                   }`}
-                  title={isProcessing ? 'Processing...' : 'Extract Audio Features'}
+                  title={
+                    isProcessing 
+                      ? 'Processing...' 
+                      : (recordingFeatures && recordingFeatures.length > 0)
+                        ? 'Features already extracted'
+                        : 'Extract Audio Features'
+                  }
                 >
                   <BeakerIcon className="h-5 w-5" />
                 </button>
