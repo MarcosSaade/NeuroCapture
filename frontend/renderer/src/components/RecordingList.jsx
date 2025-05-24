@@ -1,7 +1,7 @@
 // frontend/renderer/src/components/RecordingList.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../api/patient'; // Assuming this is your configured axios instance
-import { TrashIcon, MusicalNoteIcon, BeakerIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, MusicalNoteIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { useNotifications } from '../context/NotificationContext';
 import { startAudioProcessing, getProcessingStatus, getRecordingFeatures } from '../api/audioProcessing';
 import ProgressBar from './ProgressBar';
@@ -215,17 +215,6 @@ export default function RecordingList({
                 >
                   <BeakerIcon className="h-5 w-5" />
                 </button>
-                
-                {/* View Features Button */}
-                {recordingFeatures && recordingFeatures.length > 0 && (
-                  <button
-                    onClick={() => viewFeatures(r.recording_id)}
-                    className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
-                    title="View Extracted Features"
-                  >
-                    <EyeIcon className="h-5 w-5" />
-                  </button>
-                )}
                 
                 {/* Delete Button */}
                 <button

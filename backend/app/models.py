@@ -75,7 +75,12 @@ class CognitiveAssessment(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     patient = relationship("Patient", back_populates="assessments")
-    audio_recordings = relationship("AudioRecording", back_populates="assessment")
+    audio_recordings = relationship(
+        "AudioRecording", 
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
     subscores = relationship(
         "AssessmentSubscore",
         back_populates="assessment",

@@ -113,40 +113,9 @@ async def delete_recording_endpoint(
     """
     Delete a recording by its ID.
     """
-    from app.crud.audio_crud import get_recording
-    
     try:
-        # Get the recording first to get the file path
-        recording = await get_recording(db, recording_id)
-        if not recording:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Recording not found"
-            )
-        
-        # Delete from database
+        # The delete_recording CRUD function handles both file and database deletion
         await delete_recording(db, recording_id)
-        
-        # Try to delete the physical file
-        try:
-            file_path = recording.file_path
-            if file_path.startswith('/uploads/recordings/'):
-                # Remove the leading slash to get relative path from current directory
-                relative_path = file_path[1:]  # Remove leading '/'
-                full_path = relative_path  # Use relative path directly
-                if os.path.exists(full_path):
-                    os.remove(full_path)
-                    print(f"Successfully deleted file: {full_path}")
-                else:
-                    print(f"File not found for deletion: {full_path}")
-            else:
-                # Handle absolute paths or other formats
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                    print(f"Successfully deleted file: {file_path}")
-        except Exception as file_error:
-            print(f"Warning: Could not delete file {recording.file_path}: {file_error}")
-        
         return None
     except HTTPException:
         raise
