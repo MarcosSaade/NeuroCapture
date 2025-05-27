@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],    # allow all headers
 )
 
-app.mount("/uploads", StaticFiles(directory="uploads/recordings"), name="uploads")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(patients.router, prefix="/api/v1")
 app.include_router(demographics.router, prefix="/api/v1")

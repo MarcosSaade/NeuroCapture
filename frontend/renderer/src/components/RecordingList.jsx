@@ -18,6 +18,7 @@ export default function RecordingList({
   const { addToast } = useNotifications();
   const [processingTasks, setProcessingTasks] = useState({}); // Track processing status per recording
   const [features, setFeatures] = useState({}); // Track extracted features per recording
+  const [clickedButtons, setClickedButtons] = useState(new Set()); // Track which buttons are clicked
 
   // Load features for all recordings on mount
   useEffect(() => {
@@ -44,6 +45,19 @@ export default function RecordingList({
   }
 
   const startFeatureExtraction = async (recordingId) => {
+    // Immediately disable this button
+    setClickedButtons(prev => new Set([...prev, recordingId]));
+    
+    // Immediately set loading state for this recording
+    setProcessingTasks(prev => ({
+      ...prev,
+      [recordingId]: {
+        status: 'initializing',
+        progress: 0,
+        intervalId: null
+      }
+    }));
+
     try {
       const response = await startAudioProcessing(patientId, assessmentId, recordingId);
       const taskId = response.task_id;
@@ -70,21 +84,31 @@ export default function RecordingList({
             // Load features for this recording
             loadFeatures(recordingId);
             
-            // Clean up processing task
+            // Clean up processing task and clicked state
             setProcessingTasks(prev => {
               const newTasks = { ...prev };
               delete newTasks[recordingId];
               return newTasks;
             });
+            setClickedButtons(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(recordingId);
+              return newSet;
+            });
           } else if (status.status === 'failed') {
             clearInterval(intervalId);
             addToast(`Audio processing failed: ${status.error}`, 'error');
             
-            // Clean up processing task
+            // Clean up processing task and clicked state
             setProcessingTasks(prev => {
               const newTasks = { ...prev };
               delete newTasks[recordingId];
               return newTasks;
+            });
+            setClickedButtons(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(recordingId);
+              return newSet;
             });
           }
         } catch (err) {
@@ -92,6 +116,7 @@ export default function RecordingList({
         }
       }, 2000); // Check every 2 seconds
       
+      // Update the processing task with the interval ID
       setProcessingTasks(prev => ({
         ...prev,
         [recordingId]: {
@@ -103,6 +128,18 @@ export default function RecordingList({
       
     } catch (err) {
       addToast(`Failed to start audio processing: ${err.message || 'Unknown error'}`, 'error');
+      
+      // Clean up processing task and clicked state on error
+      setProcessingTasks(prev => {
+        const newTasks = { ...prev };
+        delete newTasks[recordingId];
+        return newTasks;
+      });
+      setClickedButtons(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(recordingId);
+        return newSet;
+      });
     }
   };
 
@@ -199,21 +236,27 @@ export default function RecordingList({
                 {/* Feature Extraction Button */}
                 <button
                   onClick={() => startFeatureExtraction(r.recording_id)}
-                  disabled={isProcessing || (recordingFeatures && recordingFeatures.length > 0)}
-                  className={`p-1 transition-colors ${
-                    isProcessing || (recordingFeatures && recordingFeatures.length > 0)
+                  disabled={isProcessing || clickedButtons.has(r.recording_id) || (recordingFeatures && recordingFeatures.length > 0)}
+                  className={`p-1 transition-colors flex items-center justify-center ${
+                    isProcessing || clickedButtons.has(r.recording_id) || (recordingFeatures && recordingFeatures.length > 0)
                       ? 'text-gray-400 cursor-not-allowed' 
                       : 'text-green-600 hover:text-green-800'
                   }`}
                   title={
-                    isProcessing 
+                    isProcessing || clickedButtons.has(r.recording_id)
                       ? 'Processing...' 
                       : (recordingFeatures && recordingFeatures.length > 0)
                         ? 'Features already extracted'
                         : 'Extract Audio Features'
                   }
                 >
-                  <BeakerIcon className="h-5 w-5" />
+                  {isProcessing || clickedButtons.has(r.recording_id) ? (
+                    <div className="flex items-center space-x-1">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-green-600"></div>
+                    </div>
+                  ) : (
+                    <BeakerIcon className="h-5 w-5" />
+                  )}
                 </button>
                 
                 {/* Delete Button */}
