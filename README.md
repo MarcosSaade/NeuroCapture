@@ -251,20 +251,12 @@ NeuroCapture es una plataforma integral de captura, procesamiento y análisis de
 9. Base de datos relacional completa
 10. Sistema de notificaciones y validaciones
 
-### En Desarrollo 🔄:
-1. Campos específicos de ENASEM para demografía
-2. Visualizaciones de características de audio
-3. Análisis estadístico integrado
-4. Reportes automáticos de evaluaciones
-
-### Futuras implementaciones 📋:
+### En Desarrollo 📋:
 1. **Datos de acelerómetro**: Captura y análisis de movimiento
 2. **Datos de OpenPose**: Análisis de postura y gestos
 3. **Modelos de machine learning**: Predicción automática de diagnósticos
 4. **Interpretaciones clínicas**: Sistema de notas e interpretaciones
-5. **Dashboards analíticos**: Visualizaciones avanzadas de tendencias
-6. **Integración con dispositivos**: Captura directa desde hardware especializado
-7. **Sincronización en la nube**: Backup y sincronización de datos
+5. **Campos de ENASEM ** para demografía
 
 ## Arquitectura de Base de Datos
 
@@ -299,12 +291,6 @@ NeuroCapture es una plataforma integral de captura, procesamiento y análisis de
 - Esquemas Pydantic para validación de entrada
 - Validación de archivos de audio
 - Sanitización de datos de usuario
-
-## Conclusión
-
-NeuroCapture representa una solución robusta y completa para la captura y análisis de datos neurológicos. Con más de 150 características de audio extraídas automáticamente, un sistema de evaluaciones cognitivas completo, y una interfaz de usuario moderna, la plataforma está preparada para soportar investigación neurológica avanzada.
-
-El sistema actual proporciona una base sólida para análisis de habla y cognición, con arquitectura escalable preparada para futuras expansiones en análisis de movimiento, modelos predictivos, y capacidades de investigación avanzadas.
 
 ---
 
