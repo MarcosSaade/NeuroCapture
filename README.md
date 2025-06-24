@@ -1,6 +1,7 @@
 # NeuroCapture
 
 A comprehensive neurological assessment platform combining cognitive evaluations with advanced audio analysis for research and clinical applications.
+Developed at the Center For Microsystems and Biodesign, Tecnológico de Monterrey.
 
 ## 🎯 Overview
 
