@@ -1,14 +1,54 @@
+# NeuroCapture Docker Compose Configuration
+# Development environment setup for PostgreSQL database
+
 version: "3.9"
+
 services:
+  # PostgreSQL Database Service
   db:
-    image: postgres
+    image: postgres:15-alpine
+    container_name: neurocapture-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: neuro
       POSTGRES_PASSWORD: capture
       POSTGRES_DB: neurocapture
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neuro -d neurocapture"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: neurocapture-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@neurocapture.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    profiles:
+      - tools  # Use with: docker-compose --profile tools up
+
 volumes:
   db_data:
+    name: neurocapture_db_data
+  pgadmin_data:
+    name: neurocapture_pgadmin_data
+
+networks:
+  default:
+    name: neurocapture_network

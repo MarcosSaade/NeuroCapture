@@ -1,4 +1,28 @@
-# backend/app/services/audio_processing.py
+"""
+NeuroCapture Audio Processing Service
+
+Comprehensive audio analysis pipeline for extracting acoustic and prosodic features
+from speech recordings. Implements state-of-the-art signal processing techniques
+for neurological assessment applications.
+
+Key Features:
+- Advanced audio preprocessing (noise reduction, normalization)
+- Voice Activity Detection (VAD) using WebRTC
+- Prosodic feature extraction (timing, rhythm, energy)
+- Acoustic feature analysis (voice quality, spectral, formants)
+- Complexity measures (fractal dimension, entropy)
+- Feature validation and quality control
+
+Processing Pipeline:
+1. Load and preprocess audio
+2. Detect voice activity segments
+3. Extract prosodic features
+4. Extract acoustic features  
+5. Validate and store features
+
+Author: NeuroCapture Development Team
+Dependencies: librosa, noisereduce, parselmouth, scipy, webrtcvad
+"""
 
 import numpy as np
 import librosa
@@ -13,27 +37,71 @@ import warnings
 from typing import Dict, Tuple, List
 from uuid import uuid4
 
-# Suppress warnings for cleaner output
+# Suppress warnings for cleaner output during processing
 warnings.filterwarnings('ignore')
 
-# --- Preprocessing Functions ---
+# --- Audio Preprocessing Functions ---
 
 def load_audio(file_path: str, target_sr: int = 16000) -> Tuple[np.ndarray, int]:
-    """Load audio file, convert to mono, and resample to supported sample rate."""
+    """
+    Load audio file and convert to standardized format.
+    
+    Args:
+        file_path: Path to audio file
+        target_sr: Target sample rate in Hz (default: 16000)
+    
+    Returns:
+        Tuple of (audio_data, sample_rate)
+        
+    Note:
+        Automatically converts to mono and resamples to target rate.
+        Supports multiple formats: WAV, MP3, FLAC, etc.
+    """
     audio_data, sr = librosa.load(file_path, sr=target_sr, mono=True)
     return audio_data, target_sr
 
-def normalize_audio(audio_data: np.ndarray) -> np.ndarray:
-    """Normalize audio to a consistent RMS."""
-    rms_target = 0.1
+def normalize_audio(audio_data: np.ndarray, target_rms: float = 0.1) -> np.ndarray:
+    """
+    Normalize audio to consistent RMS level.
+    
+    Args:
+        audio_data: Input audio signal
+        target_rms: Target RMS level (default: 0.1)
+    
+    Returns:
+        RMS-normalized audio data
+        
+    Note:
+        Prevents volume variations from affecting feature extraction.
+        Essential for consistent cross-recording comparisons.
+    """
     current_rms = np.sqrt(np.mean(audio_data**2))
-    scaling_factor = rms_target / current_rms if current_rms > 0 else 1
-    return audio_data * scaling_factor
+    if current_rms > 0:
+        scaling_factor = target_rms / current_rms
+        return audio_data * scaling_factor
+    return audio_data
 
 def reduce_noise(audio_data: np.ndarray, sr: int) -> np.ndarray:
-    """Reduce background noise in the audio."""
-    reduced_audio = nr.reduce_noise(y=audio_data, sr=sr)
-    return reduced_audio
+    """
+    Apply noise reduction to improve signal quality.
+    
+    Args:
+        audio_data: Input audio signal
+        sr: Sample rate
+    
+    Returns:
+        Noise-reduced audio signal
+        
+    Note:
+        Uses spectral gating algorithm to identify and reduce
+        stationary background noise while preserving speech.
+    """
+    try:
+        reduced_audio = nr.reduce_noise(y=audio_data, sr=sr)
+        return reduced_audio
+    except Exception as e:
+        print(f"Warning: Noise reduction failed: {e}")
+        return audio_data
 
 def remove_extreme_peaks(audio_data: np.ndarray, k: int = 7, reduction_ratio: float = 0.99) -> np.ndarray:
     """

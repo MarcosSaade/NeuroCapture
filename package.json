@@ -1,1 +1,40 @@
-{}
+{
+  "name": "neurocapture",
+  "version": "0.1.0",
+  "description": "Comprehensive neurological assessment platform with cognitive evaluations and audio analysis",
+  "keywords": [
+    "neuroscience",
+    "cognitive-assessment",
+    "audio-analysis",
+    "speech-processing",
+    "electron",
+    "fastapi"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-organization/neurocapture.git"
+  },
+  "license": "PROPRIETARY",
+  "author": "NeuroCapture Development Team",
+  "scripts": {
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload --port 8000",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && pytest -v",
+    "db:up": "docker-compose up -d db",
+    "db:down": "docker-compose down",
+    "db:migrate": "cd backend && alembic upgrade head",
+    "db:reset": "docker-compose down -v && docker-compose up -d db && npm run db:migrate"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}

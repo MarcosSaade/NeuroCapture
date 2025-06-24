@@ -1,299 +1,196 @@
-# Progreso y Funcionalidad Actual - NeuroCapture
+# NeuroCapture
 
-## Descripción General
+A comprehensive neurological assessment platform combining cognitive evaluations with advanced audio analysis for research and clinical applications.
 
-NeuroCapture es una plataforma integral de captura, procesamiento y análisis de datos neurológicos diseñada para facilitar la evaluación cognitiva y el análisis de características de audio en investigación neurológica. El sistema combina evaluaciones cognitivas tradicionales con análisis avanzado de audio para proporcionar una herramienta completa de evaluación neurológica.
+## 🎯 Overview
 
-## Arquitectura del Sistema
+NeuroCapture provides researchers and clinicians with a complete solution for:
+- **Cognitive Assessment**: MMSE, MoCA, and custom evaluations
+- **Speech Analysis**: 150+ acoustic features from audio recordings  
+- **Data Management**: Secure patient data storage and export
+- **Multi-modal Ready**: Prepared for accelerometer and pose analysis
 
-### Backend (FastAPI + PostgreSQL)
-- **Framework**: FastAPI con uvicorn como servidor ASGI
-- **Base de datos**: PostgreSQL con AsyncPG como driver asíncrono
-- **ORM**: SQLAlchemy con soporte para operaciones asíncronas
-- **Migraciones**: Alembic para control de versiones de esquema
+## ✨ Key Features
 
-### Frontend (Electron + React)
-- **Aplicación de escritorio**: Electron para compatibilidad multiplataforma
-- **Interfaz de usuario**: React 18 con componentes funcionales
-- **Estilado**: TailwindCSS para diseño responsivo y moderno
-- **Navegación**: React Router para manejo de rutas
-- **Iconografía**: HeroIcons para iconos consistentes
+### 🧠 Cognitive Assessments
+- **MMSE (Mini-Mental State Examination)**: 30-point scale with 11 subscales
+- **MoCA (Montreal Cognitive Assessment)**: 30-point scale with 8 domains
+- **Custom Assessments**: Flexible scoring and subscale definitions
+- **Detailed Subscores**: Domain-specific analysis for comprehensive evaluation
 
-### Infraestructura
-- **Containerización**: Docker Compose para orquestación de servicios
-- **Almacenamiento**: Sistema de archivos local para grabaciones de audio
-- **API**: RESTful con documentación automática (Swagger/OpenAPI)
+### 🎵 Audio Processing
+- **Advanced Preprocessing**: Noise reduction, normalization, peak removal
+- **Voice Activity Detection**: WebRTC-based speech/silence segmentation
+- **Prosodic Features**: Timing, rhythm, energy, and tempo analysis
+- **Acoustic Features**: Voice quality, formants, spectral characteristics
+- **Complexity Measures**: Fractal dimension and entropy analysis
 
-## Funcionalidades Implementadas
+### 📊 Data Management
+- **Patient Management**: Secure study identifier system
+- **Demographics**: Age, gender, education, and custom fields
+- **Export Capabilities**: CSV export for statistical analysis
+- **Data Integrity**: Cascade deletes and referential constraints
 
-### 1. Gestión de Pacientes
+### 🖥️ Modern Interface
+- **Desktop Application**: Cross-platform Electron app
+- **Responsive Design**: Modern UI with TailwindCSS
+- **Real-time Feedback**: Progress tracking and notifications
+- **Intuitive Navigation**: Tabbed interface with modal editing
 
-#### Características principales:
-- **Creación de pacientes** con identificadores de estudio únicos
-- **Edición de información básica** (ID de estudio)
-- **Sistema de búsqueda** por identificador de estudio
-- **Eliminación segura** con confirmación del usuario
-- **Exportación de datos** en formato CSV
+## 🏗️ Architecture
 
-#### Campos de datos:
-- Identificador de estudio (1-50 caracteres, único)
-- Fechas de creación y actualización automáticas
-- Relaciones con demografía y evaluaciones
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Electron      │    │     FastAPI      │    │   PostgreSQL    │
+│   Frontend      │◄──►│     Backend      │◄──►│    Database     │
+│   (React)       │    │   (Python)       │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                │
+                                ▼
+                       ┌──────────────────┐
+                       │   File Storage   │
+                       │  (Audio Files)   │
+                       └──────────────────┘
+```
 
-### 2. Datos Demográficos
+## 🚀 Quick Start
 
-#### Información capturada:
-- **Edad** del participante
-- **Género** (selección múltiple)
-- **Años de educación** (opcional)
-- **Fecha de recolección** de datos
-- **Campos ENASEM** (preparado para implementación futura)
+### Prerequisites
+- **Node.js** 18+ and npm
+- **Python** 3.8+
+- **Docker** and Docker Compose
+- **Git**
 
-#### Funcionalidades:
-- Formularios validados con manejo de errores
-- Actualización en tiempo real
-- Vinculación automática con pacientes
+### Installation
 
-### 3. Evaluaciones Cognitivas
+1. **Clone and setup database**
+   ```bash
+   git clone https://github.com/MarcosSaade/NeuroCapture
+   cd NeuroCapture
+   docker-compose up -d db
+   ```
 
-#### Tipos de evaluación soportados:
-- **MMSE (Mini-Mental State Examination)**
-  - 30 puntos máximo
-  - 11 subescalas predefinidas
-  - Cálculo automático de puntuaciones
+2. **Backend setup**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   alembic upgrade head
+   uvicorn app.main:app --reload --port 8000
+   ```
 
-- **MoCA (Montreal Cognitive Assessment)**
-  - 30 puntos máximo
-  - 8 dominios cognitivos
-  - Puntuaciones detalladas por dominio
+3. **Frontend setup**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev  # Development mode
+   ```
 
-- **Evaluaciones personalizadas** ("Other")
-  - Puntuación flexible
-  - Campos personalizables
+4. **Access the application**
+   - Backend API: http://localhost:8000
+   - API Documentation: http://localhost:8000/docs
+   - Frontend: Launches automatically via Electron
 
-#### Características avanzadas:
-- **Subescalas detalladas** para MMSE y MoCA
-- **Fechas y horarios** de evaluación precisos
-- **Diagnósticos** asociados (opcionales)
-- **Notas clínicas** extensas
-- **Edición y eliminación** de evaluaciones existentes
+## 📁 Project Structure
 
-### 4. Procesamiento de Audio
+```
+NeuroCapture/
+├── backend/                 # FastAPI backend
+│   ├── app/
+│   │   ├── main.py         # Application entry point
+│   │   ├── models.py       # Database models
+│   │   ├── api/v1/         # API endpoints
+│   │   ├── services/       # Business logic
+│   │   └── schemas/        # Data validation
+│   ├── alembic/            # Database migrations
+│   └── tests/              # Backend tests
+├── frontend/               # Electron frontend
+│   ├── main/               # Electron main process
+│   └── renderer/           # React application
+├── docker-compose.yml      # Development database
+├── DOCUMENTATION.md        # Complete technical docs
+└── README.md              # This file
+```
 
-#### Capacidades de grabación:
-- **Subida de archivos** de audio en múltiples formatos
-- **Metadatos detallados**: tipo de tarea, dispositivo de grabación
-- **Vinculación automática** con evaluaciones cognitivas
-- **Reproducción integrada** con controles de audio HTML5
+## 🔬 Audio Features
 
-#### Procesamiento avanzado de señales:
+### Prosodic Features (35+)
+- **Temporal**: Speech duration, pause counts, articulation rate
+- **Energy**: Short-time energy analysis and variability
+- **Rhythm**: PVI indices, tempo estimation, beat intervals
+- **Peaks**: Intensity peaks and inter-peak statistics
 
-##### Preprocesamiento:
-- **Normalización de audio** con RMS objetivo
-- **Reducción de ruido** usando algoritmos de noisereduce
-- **Eliminación de picos extremos** para mejorar calidad
-- **Conversión de formatos** y frecuencias de muestreo
+### Acoustic Features (150+)
+- **Voice Quality**: Jitter, shimmer, CPPS, HNR
+- **Formants**: F1-F4 statistics, bandwidths, derivatives
+- **Spectral**: 30 MFCCs, centroid, rolloff, flux, slope
+- **Complexity**: Higuchi Fractal Dimension, entropy measures
 
-##### Detección de Actividad Vocal (VAD):
-- **WebRTC VAD** con múltiples niveles de agresividad
-- **Segmentación automática** de habla y silencio
-- **Filtrado por duración mínima** para mayor precisión
-- **Umbrales configurables** para diferentes tipos de grabación
+## 🧪 Testing
 
-### 5. Extracción de Características de Audio
+```bash
+pytest
+```
 
-#### Características Prosódicas (35+ características):
+## 📊 Data Export
 
-##### Temporales:
-- **Duración total** de la grabación
-- **Conteo de segmentos** de habla y silencio
-- **Duraciones promedio** de pausas y habla
-- **Variabilidad temporal** (desviación estándar, coeficiente de variación)
-- **Relaciones temporales** (habla/pausa, tasa de articulación)
+Export comprehensive datasets in CSV format:
+- **Patient Information**: Demographics and study identifiers
+- **Assessment Results**: Scores, subscales, and clinical notes
+- **Audio Features**: All extracted acoustic characteristics
+- **Metadata**: Recording details and processing information
 
-##### Rítmicas:
-- **PVI (Pairwise Variability Index)** crudo y normalizado
-- **Detección de picos** de intensidad
-- **Intervalos entre picos** con estadísticas descriptivas
+## 🔧 Configuration
 
-##### Energéticas:
-- **Energía de corto plazo** (media, desviación estándar)
-- **Variabilidad energética** (coeficiente de variación)
-- **Entropía energética** para análisis de distribución
+### Environment Variables
+Create `.env` in the backend directory:
+```env
+DATABASE_URL=postgresql+asyncpg://neuro:capture@localhost:5432/neurocapture
+UPLOAD_DIRECTORY=uploads
+DEBUG=true
+```
 
-##### Tempo y Ritmo:
-- **Estimación de tempo** en BPM usando librosa
-- **Intervalos entre beats** (IBI) con estadísticas completas
-- **Análisis de variabilidad rítmica**
+### Database Configuration
+Default PostgreSQL settings:
+- **Host**: localhost:5432
+- **Database**: neurocapture
+- **User**: neuro
+- **Password**: capture
 
-#### Características Acústicas (150+ características):
+## 🤝 Development Workflow
 
-##### Calidad Vocal:
-- **Jitter local y PPQ5** para estabilidad de frecuencia
-- **Shimmer local y APQ5** para estabilidad de amplitud
-- **CPPS (Cepstral Peak Prominence Smoothed)** para calidad vocal
+### Code Standards
+- **Python**: PEP 8, type hints, comprehensive docstrings
+- **JavaScript**: ES6+, functional components, JSDoc comments
+- **Git**: Conventional commits, feature branches
 
-##### Formantes (F1-F4):
-- **Estadísticas descriptivas** (media, desviación, rango, mediana)
-- **Asimetría y curtosis** para análisis de distribución
-- **Derivadas temporales** (delta formantes)
-- **Ancho de banda F3** (F3_B3)
-- **Coeficiente de variación F4**
+### Making Changes
+1. Create feature branch: `git checkout -b feature/new-feature`
+2. Make changes and add tests
+3. Run tests: `pytest` (backend) and `npm test` (frontend)
+4. Commit: `git commit -m "feat(scope): description"`
+5. Push and create pull request
 
-##### Espectrales:
-- **30 MFCCs** con estadísticas (media, desviación estándar)
-- **Delta y Delta-Delta MFCCs** para análisis dinámico
-- **Pendiente espectral** para caracterización timbral
-- **Centroide espectral** para brillo tonal
-- **Flujo espectral** (media y desviación estándar)
-- **Roll-off espectral** para análisis de energía
-- **Tasa de cruces por cero** para contenido armónico
-- **Entropía energética** espectral
+## 📚 Documentation
 
-##### Armónicos y Ruido:
-- **HNR (Harmonics-to-Noise Ratio)** usando autocorrelación
-- **AVQI HNR_sd** para análisis de calidad vocal
-- **Pitch medio y desviación estándar**
+- **[DOCUMENTATION.md](DOCUMENTATION.md)**: Complete technical documentation
+- **[API Docs](http://localhost:8000/docs)**: Interactive API documentation
+- **[ReDoc](http://localhost:8000/redoc)**: Alternative API documentation
 
-##### Amplitud:
-- **Amplitud promedio, pico y varianza**
-- **Amplitud mínima y máxima**
-- **Diferencia media de amplitud máxima**
 
-##### Complejidad:
-- **Dimensión Fractal de Higuchi (HFD)** con múltiples ventanas
-- **Estadísticas HFD** (media, máximo, mínimo, desviación, varianza)
-- **Características adicionales**: Asimetría, TrajIntra
+## 🔮 Future Features
 
-#### Sistema de Procesamiento en Tiempo Real:
+- **Accelerometer Analysis**: Motion and gait pattern analysis
+- **OpenPose Integration**: Pose estimation and gesture analysis  
+- **Machine Learning Models**: Automated diagnostic predictions
+- **ENASEM Integration**: Specialized demographic fields
 
-##### Gestión de Tareas:
-- **Procesamiento asíncrono** en segundo plano
-- **Seguimiento de progreso** en tiempo real (0-100%)
-- **Estados de tarea**: pendiente, ejecutándose, completado, fallido
-- **Notificaciones** automáticas al usuario
+## 📄 License
 
-##### Interfaz de Usuario:
-- **Barras de progreso** animadas durante procesamiento
-- **Indicadores visuales** de estado de extracción
-- **Contadores de características** extraídas
-- **Botones inteligentes** que se deshabilitan según contexto
-
-##### Almacenamiento:
-- **Base de datos relacional** para características extraídas
-- **Archivos de audio limpios** guardados automáticamente
-- **Metadatos completos** de procesamiento
-
-### 6. Gestión de Datos y Exportación
-
-#### Exportación de Características:
-- **Formato CSV** con todas las características
-- **Metadatos del paciente** incluidos
-- **Información de evaluaciones** asociadas
-- **Estructura tabular** para análisis estadístico
-
-#### Integridad de Datos:
-- **Eliminación en cascada** para mantener consistencia
-- **Validación de tipos** de datos
-- **Manejo de valores nulos** y casos extremos
-- **Filtrado de características** no válidas (NaN, infinito)
-
-### 7. Interfaz de Usuario
-
-#### Diseño y Experiencia:
-- **Navegación por pestañas** intuitiva
-- **Formularios responsivos** con validación en tiempo real
-- **Tablas interactivas** con ordenamiento y búsqueda
-- **Modales y notificaciones** para feedback inmediato
-- **Diseño moderno** con TailwindCSS
-
-#### Funcionalidades de Usuario:
-- **Búsqueda en tiempo real** de pacientes
-- **Edición inline** de datos
-- **Confirmaciones de eliminación** para seguridad
-- **Indicadores de carga** durante operaciones
-- **Tooltips informativos** en botones y campos
-
-## Tecnologías y Librerías Principales
-
-### Procesamiento de Audio:
-- **librosa**: Análisis de audio y extracción de características espectrales
-- **praat-parselmouth**: Análisis fonético y extracción de formantes
-- **noisereduce**: Reducción de ruido avanzada
-- **webrtcvad**: Detección de actividad vocal en tiempo real
-- **scipy**: Procesamiento de señales y análisis estadístico
-- **numpy**: Operaciones matemáticas y manejo de arrays
-
-### Backend:
-- **FastAPI**: Framework web moderno con validación automática
-- **SQLAlchemy**: ORM con soporte asíncrono
-- **Alembic**: Migraciones de base de datos
-- **asyncpg**: Driver PostgreSQL asíncrono
-- **Pydantic**: Validación de datos y serialización
-
-### Frontend:
-- **React 18**: Framework de interfaz de usuario
-- **Electron**: Aplicación de escritorio multiplataforma
-- **Axios**: Cliente HTTP para comunicación con API
-- **TailwindCSS**: Framework de CSS utilitario
-
-## Estado Actual del Desarrollo
-
-### Funcionalidades Completadas ✅:
-1. Gestión completa de pacientes
-2. Formularios de datos demográficos
-3. Sistema de evaluaciones cognitivas (MMSE, MoCA)
-4. Subida y reproducción de archivos de audio
-5. Procesamiento avanzado de audio con 150+ características
-6. Sistema de seguimiento de tareas en tiempo real
-7. Exportación de datos en CSV
-8. Interfaz de usuario moderna y responsiva
-9. Base de datos relacional completa
-10. Sistema de notificaciones y validaciones
-
-### En Desarrollo 📋:
-1. **Datos de acelerómetro**: Captura y análisis de movimiento
-2. **Datos de OpenPose**: Análisis de postura y gestos
-3. **Modelos de machine learning**: Predicción automática de diagnósticos
-4. **Interpretaciones clínicas**: Sistema de notas e interpretaciones
-5. **Campos de ENASEM ** para demografía
-
-## Arquitectura de Base de Datos
-
-### Tablas Principales:
-- **patients**: Información básica de participantes
-- **demographics**: Datos demográficos detallados
-- **cognitive_assessments**: Evaluaciones cognitivas
-- **assessment_subscores**: Puntuaciones detalladas por dominio
-- **audio_recordings**: Metadatos de grabaciones
-- **audio_features**: Características extraídas del audio
-- **interpretations**: Notas e interpretaciones clínicas (preparado)
-- **model_predictions**: Predicciones de modelos ML (preparado)
-
-### Relaciones:
-- Eliminación en cascada para integridad referencial
-- Índices optimizados para consultas frecuentes
-- Campos de auditoría (created_at, updated_at) en todas las tablas
-
-## Calidad y Robustez del Código
-
-### Testing:
-- Tests unitarios para componentes React
-- Mocks para APIs y servicios externos
-- Validación de flujos de datos críticos
-
-### Manejo de Errores:
-- Try-catch comprehensivo en operaciones críticas
-- Mensajes de error informativos para usuarios
-- Logging detallado para debugging
-
-### Validación de Datos:
-- Esquemas Pydantic para validación de entrada
-- Validación de archivos de audio
-- Sanitización de datos de usuario
+This project is proprietary software developed at Tecnológico de Monterrey for research purposes.
+For details, contact snavarro.tuch@tec.mx.
 
 ---
 
-**Versión del documento**: 1.0  
-**Fecha**: 27 Mayo 2025  
-**Estado del proyecto**: Beta funcional con características core implementadas
+**Version**: 0.1.0  
+**Last Updated**: June 2025  
+**Status**: Production-ready beta
