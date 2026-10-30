@@ -2,7 +2,7 @@
 
 A desktop platform for collecting and analyzing data in studies of neurodegenerative disease. It records standardized speech samples, scores cognitive tests (MMSE and MoCA), extracts 150+ acoustic features from each recording, and exports everything as analysis-ready CSV.
 
-Developed at the Center for Microsystems and Biodesign, Tecnológico de Monterrey. I built it end to end: the database schema, the FastAPI backend, the audio feature pipeline and the Electron app.
+I built it to support a study run by the Center for Microsystems and Biodesign at Tecnológico de Monterrey, and wrote all of it: the database schema, the FastAPI backend, the audio feature pipeline and the Electron app.
 
 ## Why
 
@@ -105,4 +105,4 @@ Speech recording, cognitive assessments, feature extraction and export are imple
 
 ## License
 
-Proprietary software developed at Tecnológico de Monterrey for research purposes. For details, contact snavarro.tuch@tec.mx.
+MIT, see [LICENSE.txt](LICENSE.txt).

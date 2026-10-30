@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/your-organization/neurocapture.git"
   },
-  "license": "PROPRIETARY",
+  "license": "MIT",
   "author": "NeuroCapture Development Team",
   "scripts": {
     "install:all": "npm run install:frontend && npm run install:backend",

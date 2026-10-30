@@ -737,8 +737,6 @@ console.log('Debug info:', data);
 
 For technical support or questions about the codebase:
 - Review this documentation first
-- Contact snavarro.tuch@tec.mx
-
-**Project Status**: Production-ready beta
+- Open an issue on GitHub
 **Last Updated**: June 2025
 **Maintainer**: Center For Microsystems and Biodesign, Tecnológico de Monterrey
