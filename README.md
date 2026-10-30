@@ -33,11 +33,11 @@ Speech-based screening research needs recordings and cognitive scores that are c
 
 ## Architecture
 
-```
-Electron + React (Tailwind)  <-->  FastAPI (async SQLAlchemy)  <-->  PostgreSQL
-                                          |
-                                          v
-                                  audio files on disk
+```mermaid
+flowchart LR
+    UI["Electron + React<br/>(Tailwind)"] <--> API["FastAPI<br/>(async SQLAlchemy)"]
+    API <--> DB[(PostgreSQL)]
+    API --> FS[/"audio files on disk"/]
 ```
 
 - **Backend:** FastAPI with async SQLAlchemy and Pydantic schemas, Alembic migrations, and an audio processing service built on librosa, Praat (parselmouth) and WebRTC VAD.

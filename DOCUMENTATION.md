@@ -32,18 +32,11 @@ NeuroCapture is a comprehensive neurological assessment platform that combines:
 ## Architecture
 
 ### System Components
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Electron      │    │     FastAPI      │    │   PostgreSQL    │
-│   Frontend      │◄──►│     Backend      │◄──►│    Database     │
-│   (React)       │    │                  │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌──────────────────┐
-                       │   File Storage   │
-                       │  (Audio Files)   │
-                       └──────────────────┘
+```mermaid
+flowchart LR
+    FE["Electron frontend<br/>(React)"] <--> BE["FastAPI backend"]
+    BE <--> DB[(PostgreSQL)]
+    BE --> FS[/"File storage<br/>(audio files)"/]
 ```
 
 ### Technology Stack
