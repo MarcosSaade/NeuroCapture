@@ -1,197 +1,108 @@
 # NeuroCapture
 
-A comprehensive neurological assessment platform combining cognitive evaluations with advanced audio analysis for research and clinical applications.
-Developed at the Center For Microsystems and Biodesign, Tecnológico de Monterrey.
+A desktop platform for collecting and analyzing data in studies of neurodegenerative disease. It records standardized speech samples, scores cognitive tests (MMSE and MoCA), extracts 150+ acoustic features from each recording, and exports everything as analysis-ready CSV.
 
-## Overview
+Developed at the Center for Microsystems and Biodesign, Tecnológico de Monterrey. I built it end to end: the database schema, the FastAPI backend, the audio feature pipeline and the Electron app.
 
-NeuroCapture provides researchers and clinicians with a complete solution for:
-- **Cognitive Assessment**: MMSE, MoCA, and custom evaluations
-- **Speech Analysis**: 150+ acoustic features from audio recordings  
-- **Data Management**: Secure patient data storage and export
-- **Multi-modal Ready**: Prepared for accelerometer and pose analysis
+## Why
 
-## Key Features
+Speech-based screening research needs recordings and cognitive scores that are collected the same way every time and linked to the right participant, followed by hundreds of features per recording. Doing that with loose audio files and spreadsheets is slow and error-prone. NeuroCapture puts collection, scoring, feature extraction and export in one tool.
 
-### Cognitive Assessments
-- **MMSE (Mini-Mental State Examination)**: 30-point scale with 11 subscales
-- **MoCA (Montreal Cognitive Assessment)**: 30-point scale with 8 domains
-- **Custom Assessments**: Flexible scoring and subscale definitions
-- **Detailed Subscores**: Domain-specific analysis for comprehensive evaluation
+## Features
 
-### Audio Processing
-- **Advanced Preprocessing**: Noise reduction, normalization, peak removal
-- **Voice Activity Detection**: WebRTC-based speech/silence segmentation
-- **Prosodic Features**: Timing, rhythm, energy, and tempo analysis
-- **Acoustic Features**: Voice quality, formants, spectral characteristics
-- **Complexity Measures**: Fractal dimension and entropy analysis
+**Participants**
+- Study identifiers instead of names, plus demographics (age, gender, education).
+- Referential integrity: assessments, recordings and features are linked to their participant with foreign keys and cascade deletes.
 
-### Data Management
-- **Patient Management**: Secure study identifier system
-- **Demographics**: Age, gender, education, and custom fields
-- **Export Capabilities**: CSV export for statistical analysis
-- **Data Integrity**: Cascade deletes and referential constraints
+**Cognitive assessments**
+- MMSE (30 points, 11 subscales) and MoCA (30 points, 8 domains), with subscores stored per domain.
+- Custom assessments with their own scoring and subscales.
 
-### Modern Interface
-- **Desktop Application**: Cross-platform Electron app
-- **Responsive Design**: Modern UI with TailwindCSS
-- **Real-time Feedback**: Progress tracking and notifications
-- **Intuitive Navigation**: Tabbed interface with modal editing
+**Speech recording and analysis**
+- Preprocessing: noise reduction, normalization and peak removal.
+- WebRTC voice activity detection to separate speech from silence.
+- 150+ features per recording:
+  - *Voice quality:* jitter, shimmer, CPPS, HNR.
+  - *Formants:* F1 to F4 statistics and bandwidths.
+  - *Spectral:* 30 MFCCs and their deltas, spectral centroid, rolloff, flux and slope.
+  - *Timing and rhythm:* speech and pause durations, pause counts, articulation rate, PVI rhythm indices, energy and intensity peaks.
+  - *Complexity:* Higuchi fractal dimension and entropy measures.
+
+**Export**
+- One CSV with participant information, assessment scores and subscores, and all audio features, ready for statistical analysis.
 
 ## Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Electron      │    │     FastAPI      │    │   PostgreSQL    │
-│   Frontend      │◄──►│     Backend      │◄──►│    Database     │
-│   (React)       │    │   (Python)       │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌──────────────────┐
-                       │   File Storage   │
-                       │  (Audio Files)   │
-                       └──────────────────┘
+Electron + React (Tailwind)  <-->  FastAPI (async SQLAlchemy)  <-->  PostgreSQL
+                                          |
+                                          v
+                                  audio files on disk
 ```
 
-## Quick Start
+- **Backend:** FastAPI with async SQLAlchemy and Pydantic schemas, Alembic migrations, and an audio processing service built on librosa, Praat (parselmouth) and WebRTC VAD.
+- **Frontend:** Electron desktop app with a React and Tailwind interface.
+- **Tests:** pytest suites for participants, assessments and recordings.
 
-### Prerequisites
-- **Node.js** 18+ and npm
-- **Python** 3.8+
-- **Docker** and Docker Compose
-- **Git**
+## Quick start
 
-### Installation
-
-1. **Clone and setup database**
-   ```bash
-   git clone https://github.com/MarcosSaade/NeuroCapture
-   cd NeuroCapture
-   docker-compose up -d db
-   ```
-
-2. **Backend setup**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   alembic upgrade head
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-3. **Frontend setup**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev  # Development mode
-   ```
-
-4. **Access the application**
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
-   - Frontend: Launches automatically via Electron
-
-## Project Structure
-
-```
-NeuroCapture/
-├── backend/                 # FastAPI backend
-│   ├── app/
-│   │   ├── main.py         # Application entry point
-│   │   ├── models.py       # Database models
-│   │   ├── api/v1/         # API endpoints
-│   │   ├── services/       # Business logic
-│   │   └── schemas/        # Data validation
-│   ├── alembic/            # Database migrations
-│   └── tests/              # Backend tests
-├── frontend/               # Electron frontend
-│   ├── main/               # Electron main process
-│   └── renderer/           # React application
-├── docker-compose.yml      # Development database
-├── DOCUMENTATION.md        # Complete technical docs
-└── README.md              # This file
-```
-
-## Audio Features
-
-### Prosodic Features (35+)
-- **Temporal**: Speech duration, pause counts, articulation rate
-- **Energy**: Short-time energy analysis and variability
-- **Rhythm**: PVI indices, tempo estimation, beat intervals
-- **Peaks**: Intensity peaks and inter-peak statistics
-
-### Acoustic Features (150+)
-- **Voice Quality**: Jitter, shimmer, CPPS, HNR
-- **Formants**: F1-F4 statistics, bandwidths, derivatives
-- **Spectral**: 30 MFCCs, centroid, rolloff, flux, slope
-- **Complexity**: Higuchi Fractal Dimension, entropy measures
-
-## Testing
+Requirements: Node.js 18+, Python 3.8+, Docker.
 
 ```bash
-pytest
+git clone https://github.com/MarcosSaade/NeuroCapture
+cd NeuroCapture
+docker-compose up -d db                 # PostgreSQL
+
+cd backend
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
+
+cd ../frontend
+npm install
+npm run dev                             # launches the Electron app
 ```
 
-## Data Export
+The API runs at http://localhost:8000 with interactive docs at http://localhost:8000/docs.
 
-Export comprehensive datasets in CSV format:
-- **Patient Information**: Demographics and study identifiers
-- **Assessment Results**: Scores, subscales, and clinical notes
-- **Audio Features**: All extracted acoustic characteristics
-- **Metadata**: Recording details and processing information
+Backend configuration goes in `backend/.env`:
 
-## Configuration
-
-### Environment Variables
-Create `.env` in the backend directory:
 ```env
 DATABASE_URL=postgresql+asyncpg://neuro:capture@localhost:5432/neurocapture
 UPLOAD_DIRECTORY=uploads
 DEBUG=true
 ```
 
-### Database Configuration
-Default PostgreSQL settings:
-- **Host**: localhost:5432
-- **Database**: neurocapture
-- **User**: neuro
-- **Password**: capture
+Run the tests with `pytest` from `backend/`.
 
-## Development Workflow
+## Project structure
 
-### Code Standards
-- **Python**: PEP 8, type hints, comprehensive docstrings
-- **JavaScript**: ES6+, functional components, JSDoc comments
-- **Git**: Conventional commits, feature branches
+```
+backend/
+  app/
+    main.py          FastAPI application
+    models.py        database models
+    api/v1/          endpoints (participants, assessments, recordings, audio processing, export)
+    services/        audio processing and feature extraction
+    schemas/         Pydantic models
+  alembic/           migrations
+  tests/
+frontend/
+  main/              Electron main process
+  renderer/          React app
+docker-compose.yml   development database
+```
 
-### Making Changes
-1. Create feature branch: `git checkout -b feature/new-feature`
-2. Make changes and add tests
-3. Run tests: `pytest` (backend) and `npm test` (frontend)
-4. Commit: `git commit -m "feat(scope): description"`
-5. Push and create pull request
+Further documentation: [DOCUMENTATION.md](DOCUMENTATION.md), [API.md](API.md), [DEVELOPMENT.md](DEVELOPMENT.md), [DEPLOYMENT.md](DEPLOYMENT.md).
 
-## Documentation
+## Status and roadmap
 
-- **[DOCUMENTATION.md](DOCUMENTATION.md)**: Complete technical documentation
-- **[API Docs](http://localhost:8000/docs)**: Interactive API documentation
-- **[ReDoc](http://localhost:8000/redoc)**: Alternative API documentation
+Speech recording, cognitive assessments, feature extraction and export are implemented. The database schema already includes tables for accelerometer and OpenPose data and for model predictions, but their capture and analysis are not built yet. Planned:
 
-
-## Future Features
-
-- **Accelerometer Analysis**: Motion and gait pattern analysis
-- **OpenPose Integration**: Pose estimation and gesture analysis  
-- **Machine Learning Models**: Automated diagnostic predictions
-- **ENASEM Integration**: Specialized demographic fields
+- Accelerometer-based gait analysis.
+- OpenPose pose estimation.
+- Screening models trained on the collected features.
 
 ## License
 
-This project is proprietary software developed at Tecnológico de Monterrey for research purposes.
-For details, contact snavarro.tuch@tec.mx.
-
----
-
-**Version**: 0.1.0  
-**Last Updated**: June 2025  
-**Status**: Production-ready beta
+Proprietary software developed at Tecnológico de Monterrey for research purposes. For details, contact snavarro.tuch@tec.mx.
