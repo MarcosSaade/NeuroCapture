@@ -3,7 +3,7 @@
 A comprehensive neurological assessment platform combining cognitive evaluations with advanced audio analysis for research and clinical applications.
 Developed at the Center For Microsystems and Biodesign, Tecnológico de Monterrey.
 
-## 🎯 Overview
+## Overview
 
 NeuroCapture provides researchers and clinicians with a complete solution for:
 - **Cognitive Assessment**: MMSE, MoCA, and custom evaluations
@@ -11,34 +11,34 @@ NeuroCapture provides researchers and clinicians with a complete solution for:
 - **Data Management**: Secure patient data storage and export
 - **Multi-modal Ready**: Prepared for accelerometer and pose analysis
 
-## ✨ Key Features
+## Key Features
 
-### 🧠 Cognitive Assessments
+### Cognitive Assessments
 - **MMSE (Mini-Mental State Examination)**: 30-point scale with 11 subscales
 - **MoCA (Montreal Cognitive Assessment)**: 30-point scale with 8 domains
 - **Custom Assessments**: Flexible scoring and subscale definitions
 - **Detailed Subscores**: Domain-specific analysis for comprehensive evaluation
 
-### 🎵 Audio Processing
+### Audio Processing
 - **Advanced Preprocessing**: Noise reduction, normalization, peak removal
 - **Voice Activity Detection**: WebRTC-based speech/silence segmentation
 - **Prosodic Features**: Timing, rhythm, energy, and tempo analysis
 - **Acoustic Features**: Voice quality, formants, spectral characteristics
 - **Complexity Measures**: Fractal dimension and entropy analysis
 
-### 📊 Data Management
+### Data Management
 - **Patient Management**: Secure study identifier system
 - **Demographics**: Age, gender, education, and custom fields
 - **Export Capabilities**: CSV export for statistical analysis
 - **Data Integrity**: Cascade deletes and referential constraints
 
-### 🖥️ Modern Interface
+### Modern Interface
 - **Desktop Application**: Cross-platform Electron app
 - **Responsive Design**: Modern UI with TailwindCSS
 - **Real-time Feedback**: Progress tracking and notifications
 - **Intuitive Navigation**: Tabbed interface with modal editing
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -54,7 +54,7 @@ NeuroCapture provides researchers and clinicians with a complete solution for:
                        └──────────────────┘
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - **Node.js** 18+ and npm
@@ -91,7 +91,7 @@ NeuroCapture provides researchers and clinicians with a complete solution for:
    - API Documentation: http://localhost:8000/docs
    - Frontend: Launches automatically via Electron
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 NeuroCapture/
@@ -112,7 +112,7 @@ NeuroCapture/
 └── README.md              # This file
 ```
 
-## 🔬 Audio Features
+## Audio Features
 
 ### Prosodic Features (35+)
 - **Temporal**: Speech duration, pause counts, articulation rate
@@ -126,13 +126,13 @@ NeuroCapture/
 - **Spectral**: 30 MFCCs, centroid, rolloff, flux, slope
 - **Complexity**: Higuchi Fractal Dimension, entropy measures
 
-## 🧪 Testing
+## Testing
 
 ```bash
 pytest
 ```
 
-## 📊 Data Export
+## Data Export
 
 Export comprehensive datasets in CSV format:
 - **Patient Information**: Demographics and study identifiers
@@ -140,7 +140,7 @@ Export comprehensive datasets in CSV format:
 - **Audio Features**: All extracted acoustic characteristics
 - **Metadata**: Recording details and processing information
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 Create `.env` in the backend directory:
@@ -157,7 +157,7 @@ Default PostgreSQL settings:
 - **User**: neuro
 - **Password**: capture
 
-## 🤝 Development Workflow
+## Development Workflow
 
 ### Code Standards
 - **Python**: PEP 8, type hints, comprehensive docstrings
@@ -171,21 +171,21 @@ Default PostgreSQL settings:
 4. Commit: `git commit -m "feat(scope): description"`
 5. Push and create pull request
 
-## 📚 Documentation
+## Documentation
 
 - **[DOCUMENTATION.md](DOCUMENTATION.md)**: Complete technical documentation
 - **[API Docs](http://localhost:8000/docs)**: Interactive API documentation
 - **[ReDoc](http://localhost:8000/redoc)**: Alternative API documentation
 
 
-## 🔮 Future Features
+## Future Features
 
 - **Accelerometer Analysis**: Motion and gait pattern analysis
 - **OpenPose Integration**: Pose estimation and gesture analysis  
 - **Machine Learning Models**: Automated diagnostic predictions
 - **ENASEM Integration**: Specialized demographic fields
 
-## 📄 License
+## License
 
 This project is proprietary software developed at Tecnológico de Monterrey for research purposes.
 For details, contact snavarro.tuch@tec.mx.
